@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vibesecur — Launching Soon</title>
+<meta name="description" content="The security scanner built for vibe-coded apps. Catches what Lovable, Cursor, Bolt and v0 leave behind — before hackers do. Join the waitlist.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════
+   VIBESECUR — APPLE-LEVEL DARK AESTHETIC
+   True black · SF Pro system font · Refined micro-detail
+   ══════════════════════════════════════════════════════ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* True Apple dark — not navy, pure black */
+  --black:  #000000;
+  --black1: #0a0a0a;
+  --black2: #111111;
+  --black3: #1a1a1a;
+  --black4: #222222;
+
+  /* Glass surfaces */
+  --glass:       rgba(255,255,255,.04);
+  --glass-hover: rgba(255,255,255,.07);
+  --glass-strong:rgba(255,255,255,.08);
+
+  /* Borders — whisper thin */
+  --border:  rgba(255,255,255,.07);
+  --border2: rgba(255,255,255,.10);
+  --border3: rgba(255,255,255,.14);
+
+  /* Accent system */
+  --green:  #00F5A8;
+  --cyan:   #00C8FF;
+  --red:    #FF3B30;   /* Apple red */
+  --amber:  #FF9F0A;   /* Apple amber */
+  --purple: #BF5AF2;   /* Apple purple */
+  --white:  #FFFFFF;
+
+  /* Text hierarchy — Apple approach */
+  --t1: rgba(255,255,255,1);     /* Headlines */
+  --t2: rgba(255,255,255,.72);   /* Body */
+  --t3: rgba(255,255,255,.42);   /* Secondary */
+  --t4: rgba(255,255,255,.26);   /* Tertiary */
+
+  /* Typography — SF Pro stack */
+  --font-display: -apple-system, 'SF Pro Display', BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+  --font-text:    -apple-system, 'SF Pro Text',    BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+  --font-mono:    'JetBrains Mono', 'SF Mono', ui-monospace, monospace;
+}
+
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+
+body {
+  font-family: var(--font-text);
+  background: var(--black);
+  color: var(--t2);
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* ── FIXED BACKGROUND ATMOSPHERE ──────────────────────
+   Three layers: mesh gradient + radial glows + noise
+   ─────────────────────────────────────────────────── */
+
+/* Layer 1: Rich deep black base with subtle teal depth */
+.bg-base {
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 100% 60% at 20% -10%, rgba(0,20,30,.9) 0%, transparent 60%),
+    radial-gradient(ellipse 80% 50% at 80% 110%, rgba(0,10,20,.8) 0%, transparent 60%),
+    #000;
+}
+
+/* Layer 2: Dot grid — much dimmer, more refined */
+.bg-grid {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  background-image: radial-gradient(circle, rgba(255,255,255,.055) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Layer 3: Vignette — deep and Apple-dark */
+.bg-vignette {
+  position: fixed; inset: 0; z-index: 2; pointer-events: none;
+  background:
+    radial-gradient(ellipse 75% 65% at 50% 50%,
+      transparent 15%,
+      rgba(0,0,0,.65) 65%,
+      rgba(0,0,0,.95) 100%);
+}
+
+/* Layer 4: Green atmosphere — very subtle top-left */
+.bg-glow-g {
+  position: fixed;
+  width: 900px; height: 700px;
+  top: -300px; left: -250px;
+  z-index: 2; pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, rgba(0,245,168,.055) 0%, transparent 65%);
+  filter: blur(80px);
+  animation: breathe 12s ease-in-out infinite alternate;
+}
+
+/* Layer 5: Cyan atmosphere — bottom right */
+.bg-glow-c {
+  position: fixed;
+  width: 800px; height: 700px;
+  bottom: -250px; right: -200px;
+  z-index: 2; pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, rgba(0,200,255,.04) 0%, transparent 65%);
+  filter: blur(80px);
+  animation: breathe 16s 4s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes breathe {
+  0%   { opacity: .7; transform: scale(1) translate(0,0); }
+  100% { opacity: 1;  transform: scale(1.1) translate(10px,15px); }
+}
+
+/* Layer 6: Three.js canvas */
+#bg-canvas {
+  position: fixed; inset: 0;
+  width: 100vw; height: 100vh;
+  z-index: 3; pointer-events: none;
+  opacity: .55;
+}
+
+/* Layer 7: Scattered particles */
+#scatter { position: fixed; inset: 0; z-index: 4; pointer-events: none; overflow: hidden; }
+.sdot {
+  position: absolute;
+  animation: tw var(--d, 5s) ease-in-out var(--dl, 0s) infinite alternate;
+}
+@keyframes tw {
+  from { opacity: var(--lo, .04); }
+  to   { opacity: var(--hi, .25); }
+}
+
+/* ── CUSTOM CURSOR ─────────────────────────────────── */
+.cursor {
+  position: fixed; z-index: 9999;
+  width: 8px; height: 8px;
+  background: var(--green); border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  transition: transform .12s, opacity .12s;
+  mix-blend-mode: screen;
+}
+.cursor-ring {
+  position: fixed; z-index: 9998;
+  width: 32px; height: 32px;
+  border: 1px solid rgba(0,245,168,.35);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  transition: width .2s, height .2s, border-color .2s, transform .15s;
+}
+.cursor.hover { transform: translate(-50%,-50%) scale(2.5); }
+.cursor-ring.hover {
+  width: 48px; height: 48px;
+  border-color: rgba(0,245,168,.6);
+  transform: translate(-50%,-50%) scale(1.2);
+}
+
+/* ── NAV — macOS-style glass bar ───────────────────── */
+.nav-outer {
+  position: fixed; top: 16px;
+  left: 50%; transform: translateX(-50%);
+  z-index: 200;
+  width: calc(100% - 40px); max-width: 960px;
+}
+nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px; height: 50px;
+  background: rgba(0,0,0,.72);
+  backdrop-filter: saturate(180%) blur(24px);
+  -webkit-backdrop-filter: saturate(180%) blur(24px);
+  border: .5px solid var(--border3);
+  border-radius: 14px;
+  box-shadow: 0 1px 0 rgba(255,255,255,.05) inset,
+              0 12px 40px rgba(0,0,0,.6);
+}
+.nav-logo {
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--font-mono); font-weight: 700; font-size: 14px;
+  color: var(--green); letter-spacing: -.2px;
+}
+.nav-shield {
+  width: 28px; height: 28px; border-radius: 7px;
+  background: rgba(0,245,168,.1);
+  border: .5px solid rgba(0,245,168,.25);
+  display: flex; align-items: center; justify-content: center; font-size: 13px;
+}
+.launch-chip {
+  display: flex; align-items: center; gap: 6px;
+  font-family: var(--font-mono); font-size: 10px; font-weight: 500;
+  letter-spacing: .8px; text-transform: uppercase;
+  color: var(--green);
+  background: rgba(0,245,168,.06);
+  border: .5px solid rgba(0,245,168,.2);
+  padding: 4px 12px; border-radius: 20px;
+}
+.live-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--green);
+  animation: pulse-dot 1.8s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; box-shadow: 0 0 4px var(--green); }
+  50%       { opacity: .25; box-shadow: none; }
+}
+
+/* ── PAGE WRAPPER ──────────────────────────────────── */
+.page {
+  position: relative; z-index: 10;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 100px 24px 120px;
+  text-align: center;
+}
+
+/* ── ANIMATIONS ────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* ── COUNTDOWN ─────────────────────────────────────── */
+.countdown {
+  display: flex; align-items: center; gap: 5px;
+  margin-bottom: 36px;
+  animation: fadeUp .5s ease both;
+}
+.cd-unit {
+  background: rgba(255,255,255,.04);
+  border: .5px solid var(--border2);
+  border-radius: 12px;
+  padding: 14px 20px; min-width: 78px; text-align: center;
+  position: relative; overflow: hidden;
+  backdrop-filter: blur(12px);
+}
+.cd-unit::before {
+  content: '';
+  position: absolute; top: 0; left: 15%; right: 15%; height: .5px;
+  background: linear-gradient(90deg, transparent, rgba(0,245,168,.4), transparent);
+}
+.cd-num {
+  font-family: var(--font-mono);
+  font-size: 30px; font-weight: 700;
+  color: var(--white); display: block; line-height: 1;
+  letter-spacing: -1px;
+}
+.cd-lbl {
+  font-family: var(--font-mono);
+  font-size: 8px; color: var(--t4);
+  text-transform: uppercase; letter-spacing: 1.5px;
+  margin-top: 5px; display: block;
+}
+.cd-sep {
+  font-family: var(--font-mono); font-size: 22px;
+  color: var(--t4); font-weight: 300;
+  padding-bottom: 16px;
+  animation: pulse-dot 1.2s ease-in-out infinite;
+}
+
+/* ── HERO ──────────────────────────────────────────── */
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+  letter-spacing: .6px;
+  color: var(--green);
+  background: rgba(0,245,168,.06);
+  border: .5px solid rgba(0,245,168,.2);
+  padding: 6px 16px; border-radius: 20px;
+  margin-bottom: 32px;
+  animation: fadeUp .6s .04s ease both;
+}
+
+/* Apple-scale headline: massive, SF Pro Display weight */
+.hero-h {
+  font-family: var(--font-display);
+  font-size: clamp(48px, 7.5vw, 96px);
+  font-weight: 700;
+  line-height: 1.03;
+  letter-spacing: -2.5px;
+  color: var(--white);
+  max-width: 860px;
+  margin-bottom: 28px;
+  animation: fadeUp .65s .08s ease both;
+}
+/* Gradient text — Apple-style */
+.hero-h .gr {
+  background: linear-gradient(135deg, #00F5A8 0%, #00C8FF 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-h .cy { color: var(--cyan); }
+.hero-h .wh { color: var(--white); }
+
+.hero-sub {
+  font-family: var(--font-text);
+  font-size: clamp(16px, 2vw, 20px);
+  color: var(--t3);
+  max-width: 580px; margin: 0 auto 44px;
+  line-height: 1.65; font-weight: 400;
+  letter-spacing: -.1px;
+  animation: fadeUp .65s .16s ease both;
+}
+.hero-sub strong { color: var(--t2); font-weight: 500; }
+
+/* ── PROGRESS BAR ──────────────────────────────────── */
+.prog-wrap {
+  max-width: 500px; width: 100%;
+  margin: 0 auto 14px;
+  animation: fadeUp .65s .26s ease both;
+}
+.prog-meta {
+  display: flex; justify-content: space-between;
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--t4); margin-bottom: 8px;
+}
+.prog-meta em { color: var(--green); font-style: normal; font-weight: 600; }
+.prog-track {
+  height: 2px; background: rgba(255,255,255,.08);
+  border-radius: 1px; overflow: hidden;
+}
+.prog-fill {
+  height: 100%; width: 62.2%;
+  background: linear-gradient(90deg, var(--green), var(--cyan));
+  border-radius: 1px; position: relative;
+  transition: width .8s cubic-bezier(.25,.1,.25,1);
+}
+.prog-fill::after {
+  content: ''; position: absolute; right: -2px; top: -2px;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--cyan); box-shadow: 0 0 6px var(--cyan);
+}
+
+/* ── FORM ──────────────────────────────────────────── */
+.form-wrap {
+  max-width: 500px; width: 100%;
+  margin: 0 auto 18px;
+  animation: fadeUp .65s .3s ease both;
+}
+.form-box {
+  display: flex;
+  background: rgba(255,255,255,.04);
+  border: .5px solid var(--border3);
+  border-radius: 14px; overflow: hidden;
+  position: relative;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 0 0 1px rgba(0,245,168,.06),
+              0 24px 60px rgba(0,0,0,.5);
+  transition: box-shadow .25s;
+}
+.form-box:focus-within {
+  box-shadow: 0 0 0 1.5px rgba(0,245,168,.25),
+              0 24px 60px rgba(0,0,0,.5);
+}
+.form-box::before {
+  content: '';
+  position: absolute; top: 0; left: 8%; right: 8%; height: .5px;
+  background: linear-gradient(90deg, transparent, rgba(0,245,168,.35), transparent);
+}
+.form-inp {
+  flex: 1; padding: 17px 20px;
+  background: transparent; border: none; outline: none;
+  font-family: var(--font-mono); font-size: 13px;
+  color: var(--white); min-width: 0;
+}
+.form-inp::placeholder { color: var(--t4); font-size: 12px; }
+.form-btn {
+  padding: 15px 26px;
+  background: var(--green); color: #000;
+  font-family: var(--font-display); font-weight: 600; font-size: 14px;
+  letter-spacing: -.2px;
+  border: none; cursor: none; white-space: nowrap; flex-shrink: 0;
+  transition: background .2s, box-shadow .2s;
+}
+.form-btn:hover {
+  background: #1afdb6;
+  box-shadow: 0 0 20px rgba(0,245,168,.3);
+}
+.form-note {
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--t4); margin-top: 10px; line-height: 1.6;
+  animation: fadeUp .65s .34s ease both;
+}
+
+/* ── SUCCESS ───────────────────────────────────────── */
+.success-state {
+  display: none; flex-direction: column; align-items: center; gap: 10px;
+  animation: fadeUp .4s ease both;
+}
+.suc-icon {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: rgba(0,245,168,.06);
+  border: .5px solid rgba(0,245,168,.25);
+  display: flex; align-items: center; justify-content: center; font-size: 24px;
+  box-shadow: 0 0 30px rgba(0,245,168,.12);
+}
+.suc-title { font-size: 20px; font-weight: 600; color: var(--white); }
+.suc-pos {
+  font-family: var(--font-mono); font-size: 26px; font-weight: 700;
+  background: linear-gradient(135deg, var(--green), var(--cyan));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.suc-sub { font-family: var(--font-mono); font-size: 11px; color: var(--t4); max-width: 340px; line-height: 1.6; }
+
+/* ── TRUST PILLS ───────────────────────────────────── */
+.trust-row {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  justify-content: center; margin-bottom: 80px;
+  animation: fadeUp .65s .38s ease both;
+}
+.tp {
+  font-family: var(--font-mono); font-size: 10px;
+  color: rgba(0,245,168,.65);
+  border: .5px solid rgba(0,245,168,.12);
+  background: rgba(0,245,168,.04);
+  padding: 5px 13px; border-radius: 20px;
+  letter-spacing: .2px;
+}
+
+/* ── SECTION SEPARATOR ─────────────────────────────── */
+.sep {
+  width: 100%; max-width: 680px; margin: 0 auto 90px;
+  height: .5px;
+  background: linear-gradient(90deg, transparent, var(--border2), transparent);
+}
+
+/* ── SECTION LABELS ────────────────────────────────── */
+.sec-label {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 600;
+  letter-spacing: 2px; text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.sec-label.red    { color: rgba(255,59,48,.6);  }
+.sec-label.green  { color: rgba(0,245,168,.6);  }
+.sec-label.blue   { color: rgba(0,200,255,.6);  }
+
+.sec-h {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 3.5vw, 44px);
+  font-weight: 700; color: var(--white);
+  line-height: 1.1; letter-spacing: -1.5px;
+  margin-bottom: 16px;
+}
+.sec-h .gr {
+  background: linear-gradient(135deg, #00F5A8, #00C8FF);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.sec-h .rd { color: var(--red); }
+.sec-h .cy { color: var(--cyan); }
+
+.sec-body {
+  font-size: 17px; color: var(--t3);
+  max-width: 560px; margin: 0 auto 56px;
+  line-height: 1.7; font-weight: 400;
+}
+.sec-body strong { color: var(--t2); font-weight: 500; }
+
+/* ── INCIDENT CARDS ────────────────────────────────── */
+.problem-section  { width: 100%; max-width: 880px; margin-bottom: 90px; }
+.solution-section { width: 100%; max-width: 880px; margin-bottom: 90px; }
+.plat-section     { width: 100%; max-width: 880px; margin-bottom: 80px; }
+.waitlist-section { width: 100%; max-width: 580px; margin-bottom: 60px; }
+
+.incident-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 48px; text-align: left; }
+.incident-card {
+  background: rgba(255,59,48,.03);
+  border: .5px solid rgba(255,59,48,.12);
+  border-radius: 16px; padding: 28px;
+  position: relative; overflow: hidden;
+  backdrop-filter: blur(12px);
+  transition: background .25s;
+}
+.incident-card:hover { background: rgba(255,59,48,.05); }
+.incident-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: .5px;
+  background: linear-gradient(90deg, transparent, rgba(255,59,48,.4), transparent);
+}
+.ic-badge {
+  font-family: var(--font-mono); font-size: 9px; font-weight: 600;
+  color: rgba(255,80,80,.55); letter-spacing: 1.5px; text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.ic-quote {
+  font-size: 15px; font-weight: 500; font-style: italic;
+  color: var(--t2); line-height: 1.5; margin-bottom: 12px;
+}
+.ic-who  { font-family: var(--font-mono); font-size: 10px; color: var(--t4); }
+.ic-dmg  {
+  display: inline-block; margin-top: 12px;
+  font-family: var(--font-mono); font-size: 10px; font-weight: 600;
+  color: rgba(255,80,80,.7);
+  background: rgba(255,59,48,.08);
+  border: .5px solid rgba(255,59,48,.18);
+  padding: 3px 10px; border-radius: 5px;
+}
+
+/* ── STATS STRIP ───────────────────────────────────── */
+.stats-row { display: flex; gap: 12px; margin-bottom: 48px; }
+.stat-box {
+  flex: 1;
+  background: var(--glass);
+  border: .5px solid var(--border2);
+  border-radius: 16px; padding: 26px 20px; text-align: center;
+  position: relative; overflow: hidden;
+  backdrop-filter: blur(12px);
+  transition: background .25s;
+}
+.stat-box:hover { background: var(--glass-hover); }
+.stat-box::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: .5px;
+  background: linear-gradient(90deg, transparent, var(--sb-c, rgba(0,245,168,.35)), transparent);
+}
+.stat-n {
+  font-family: var(--font-display);
+  font-size: 40px; font-weight: 700;
+  color: var(--sb-c, var(--green));
+  line-height: 1; margin-bottom: 8px; letter-spacing: -1.5px;
+}
+.stat-l {
+  font-family: var(--font-mono); font-size: 10px; color: var(--t4);
+  text-transform: uppercase; letter-spacing: .6px; line-height: 1.5;
+}
+.stat-src { font-family: var(--font-mono); font-size: 9px; color: var(--t4); opacity: .5; margin-top: 4px; }
+
+/* ── ROOT CAUSE BLOCK ──────────────────────────────── */
+.root-box {
+  background: rgba(255,59,48,.03);
+  border: .5px solid rgba(255,59,48,.1);
+  border-radius: 20px; padding: 40px;
+  text-align: left; position: relative; overflow: hidden;
+  backdrop-filter: blur(12px);
+  margin-bottom: 14px;
+}
+.root-box::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: .5px;
+  background: linear-gradient(90deg, transparent, rgba(255,59,48,.4), transparent);
+}
+.root-label {
+  font-family: var(--font-mono); font-size: 9px; font-weight: 600;
+  color: rgba(255,80,80,.5); letter-spacing: 2px; text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.root-title {
+  font-family: var(--font-display);
+  font-size: 22px; font-weight: 600; color: var(--white);
+  margin-bottom: 14px; line-height: 1.3; letter-spacing: -.4px;
+}
+.root-body {
+  font-size: 16px; color: var(--t3); line-height: 1.75;
+}
+.root-body strong { color: var(--t2); font-weight: 500; }
+.vuln-tags { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 22px; }
+.vtag {
+  font-family: var(--font-mono); font-size: 10px;
+  color: rgba(255,80,80,.55);
+  background: rgba(255,59,48,.05);
+  border: .5px solid rgba(255,59,48,.12);
+  padding: 4px 10px; border-radius: 5px;
+}
+
+/* ── HOW IT WORKS STEPS ────────────────────────────── */
+.steps { display: flex; flex-direction: column; gap: 12px; text-align: left; margin-bottom: 48px; }
+.step-card {
+  display: flex; align-items: flex-start; gap: 24px;
+  background: var(--glass);
+  border: .5px solid var(--border2);
+  border-radius: 18px; padding: 30px;
+  position: relative; overflow: hidden;
+  backdrop-filter: blur(12px);
+  transition: background .25s, border-color .25s;
+}
+.step-card:hover { background: var(--glass-hover); border-color: var(--border3); }
+.step-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: .5px;
+  background: linear-gradient(90deg, transparent, var(--sc, rgba(0,245,168,.3)), transparent);
+}
+.step-num {
+  width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
+  background: var(--sc, var(--green)); color: #000;
+  font-family: var(--font-display);
+  font-size: 17px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.step-title { font-family: var(--font-display); font-size: 18px; font-weight: 600; color: var(--white); margin-bottom: 7px; letter-spacing: -.3px; }
+.step-desc { font-size: 15px; color: var(--t3); line-height: 1.65; }
+.step-desc strong { color: var(--t2); font-weight: 500; }
+.step-chip {
+  display: inline-block; margin-top: 12px;
+  font-family: var(--font-mono); font-size: 10px;
+  color: rgba(0,245,168,.5);
+  background: rgba(0,245,168,.05);
+  border: .5px solid rgba(0,245,168,.14);
+  padding: 3px 10px; border-radius: 5px;
+}
+
+/* ── FEATURE GRID ──────────────────────────────────── */
+.feat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 48px; text-align: left; }
+.feat-card {
+  background: var(--glass);
+  border: .5px solid var(--border2);
+  border-radius: 16px; padding: 26px 22px;
+  position: relative; overflow: hidden;
+  backdrop-filter: blur(12px);
+  transition: background .25s, border-color .25s, transform .2s;
+}
+.feat-card:hover { background: var(--glass-hover); border-color: var(--border3); transform: translateY(-2px); }
+.feat-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: .5px;
+  background: linear-gradient(90deg, transparent, var(--fc, rgba(0,245,168,.35)), transparent);
+}
+.feat-icon { font-size: 22px; margin-bottom: 14px; display: block; }
+.feat-title { font-family: var(--font-display); font-size: 14px; font-weight: 600; color: var(--white); margin-bottom: 7px; letter-spacing: -.2px; }
+.feat-desc { font-family: var(--font-mono); font-size: 10.5px; color: var(--t4); line-height: 1.6; }
+.feat-chip {
+  display: inline-block; margin-top: 12px;
+  font-family: var(--font-mono); font-size: 9px; font-weight: 600;
+  padding: 2px 8px; border-radius: 4px;
+}
+.feat-chip.free { background: rgba(0,245,168,.08); color: rgba(0,245,168,.6); border: .5px solid rgba(0,245,168,.14); }
+.feat-chip.paid { background: rgba(0,200,255,.07); color: rgba(0,200,255,.55); border: .5px solid rgba(0,200,255,.12); }
+
+/* ── QUOTE BLOCK ───────────────────────────────────── */
+.quote-box {
+  background: var(--glass);
+  border: .5px solid var(--border2);
+  border-left: 1.5px solid rgba(0,245,168,.3);
+  border-radius: 0 16px 16px 0;
+  padding: 28px 30px; text-align: left;
+  backdrop-filter: blur(12px);
+  margin-bottom: 14px;
+}
+.qt { font-size: 16px; font-style: italic; color: var(--t3); line-height: 1.7; margin-bottom: 12px; }
+.qt strong { color: var(--t2); font-style: normal; font-weight: 500; }
+.qa { font-family: var(--font-mono); font-size: 10px; color: var(--t4); }
+
+/* ── COMPARISON TABLE ──────────────────────────────── */
+.vs-table {
+  width: 100%;
+  background: var(--glass);
+  border: .5px solid var(--border2);
+  border-radius: 18px; overflow: hidden;
+  backdrop-filter: blur(12px);
+  text-align: left;
+}
+.vs-head {
+  display: grid; grid-template-columns: 2fr 1fr 1fr;
+  padding: 14px 24px;
+  background: rgba(255,255,255,.02);
+  border-bottom: .5px solid var(--border);
+}
+.vs-col { font-family: var(--font-mono); font-size: 10px; font-weight: 600; text-align: center; text-transform: uppercase; letter-spacing: 1px; }
+.vs-col.us   { color: rgba(0,245,168,.6); }
+.vs-col.them { color: var(--t4); }
+.vs-row {
+  display: grid; grid-template-columns: 2fr 1fr 1fr;
+  padding: 14px 24px; align-items: center;
+  border-bottom: .5px solid rgba(255,255,255,.03);
+  transition: background .15s;
+}
+.vs-row:last-child { border-bottom: none; }
+.vs-row:hover { background: rgba(255,255,255,.02); }
+.vs-feat { font-size: 13px; color: var(--t3); }
+.vs-val { text-align: center; font-size: 15px; }
+.vs-val.yes  { color: rgba(0,245,168,.7); }
+.vs-val.no   { color: rgba(255,59,48,.45); font-size: 13px; }
+.vs-val.meh  { font-family: var(--font-mono); font-size: 10px; color: rgba(255,159,10,.6); }
+
+/* ── PLATFORM PILLS ────────────────────────────────── */
+.plat-label {
+  font-family: var(--font-mono); font-size: 10px; color: var(--t4);
+  text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 16px;
+}
+.plat-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.plat-pill {
+  font-family: var(--font-mono); font-size: 11px;
+  padding: 7px 15px; border-radius: 20px;
+  border: .5px solid rgba(0,245,168,.15);
+  color: rgba(0,245,168,.6);
+  background: rgba(0,245,168,.04);
+  display: flex; align-items: center; gap: 6px;
+  transition: all .2s; white-space: nowrap; cursor: none;
+}
+.plat-pill:hover { border-color: rgba(0,245,168,.35); background: rgba(0,245,168,.08); color: rgba(0,245,168,.9); }
+.plat-pill::before { content: '+'; font-weight: 600; opacity: .6; }
+
+/* ── BOTTOM WAITLIST CARD ──────────────────────────── */
+.waitlist-card {
+  background: rgba(255,255,255,.03);
+  border: .5px solid var(--border3);
+  border-radius: 24px; padding: 52px 48px;
+  position: relative; overflow: hidden;
+  backdrop-filter: blur(20px);
+}
+.waitlist-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: .5px;
+  background: linear-gradient(90deg, transparent, rgba(0,245,168,.5), rgba(0,200,255,.5), transparent);
+}
+/* Subtle inner glow */
+.waitlist-card::after {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,245,168,.04) 0%, transparent 60%);
+  pointer-events: none;
+}
+.wc-eyebrow {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 600;
+  color: rgba(0,245,168,.5); letter-spacing: 2px; text-transform: uppercase;
+  display: inline-block; margin-bottom: 20px;
+}
+.wc-h {
+  font-family: var(--font-display);
+  font-size: 32px; font-weight: 700;
+  color: var(--white); line-height: 1.1; letter-spacing: -1px;
+  margin-bottom: 14px;
+}
+.wc-h .gr {
+  background: linear-gradient(135deg, #00F5A8, #00C8FF);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.wc-sub { font-size: 15px; color: var(--t3); line-height: 1.65; margin-bottom: 28px; }
+.wc-sub strong { color: var(--t2); font-weight: 500; }
+
+.perk-list { display: flex; flex-direction: column; gap: 12px; text-align: left; margin-bottom: 30px; }
+.perk-item { display: flex; align-items: flex-start; gap: 12px; font-size: 14px; color: var(--t3); }
+.perk-icon { color: var(--green); font-size: 13px; flex-shrink: 0; margin-top: 2px; font-weight: 600; }
+.perk-item strong { color: var(--t2); font-weight: 500; }
+
+/* ── SOCIAL STRIP ──────────────────────────────────── */
+.social-row {
+  display: flex; gap: 18px; align-items: center;
+  justify-content: center; flex-wrap: wrap; margin-bottom: 52px;
+}
+.si { display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 10px; color: var(--t4); }
+.sdiv2 { width: .5px; height: 14px; background: var(--border2); }
+
+/* ── FOOTER ────────────────────────────────────────── */
+.foot { font-family: var(--font-mono); font-size: 10px; color: var(--t4); line-height: 1.7; max-width: 380px; margin: 0 auto; }
+.foot a { color: rgba(0,245,168,.5); text-decoration: none; }
+.foot a:hover { color: var(--green); }
+
+/* ── TOAST ─────────────────────────────────────────── */
+.toast {
+  position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+  background: rgba(0,0,0,.9);
+  border: .5px solid rgba(0,245,168,.25);
+  color: var(--t2);
+  font-family: var(--font-mono); font-size: 12px;
+  padding: 11px 18px; border-radius: 12px;
+  transform: translateY(80px); opacity: 0; transition: all .32s;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(0,0,0,.5), 0 0 0 .5px rgba(0,245,168,.1);
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+
+/* ── RESPONSIVE ────────────────────────────────────── */
+@media(max-width: 700px) {
+  .incident-grid, .feat-grid { grid-template-columns: 1fr; }
+  .stats-row { flex-direction: column; }
+  .form-box { flex-direction: column; }
+  .form-btn { border-top: .5px solid rgba(0,245,168,.1); }
+  nav { padding: 0 14px; }
+  .waitlist-card { padding: 32px 24px; }
+  .countdown { gap: 4px; }
+  .cd-unit { min-width: 64px; padding: 12px 14px; }
+  .cd-num  { font-size: 26px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ─── BACKGROUND STACK ─────────────────────────── -->
+<div class="bg-base"></div>
+<div class="bg-grid"></div>
+<div class="bg-vignette"></div>
+<div class="bg-glow-g"></div>
+<div class="bg-glow-c"></div>
+<canvas id="bg-canvas"></canvas>
+<div id="scatter"></div>
+
+<!-- ─── CURSOR ───────────────────────────────────── -->
+<div class="cursor"      id="cur"></div>
+<div class="cursor-ring" id="ring"></div>
+<div class="toast"       id="toast"></div>
+
+<!-- ─── NAV ─────────────────────────────────────── -->
+<div class="nav-outer">
+  <nav>
+    <div class="nav-logo">
+      <div class="nav-shield">🛡</div>Vibesecur
+    </div>
+    <div class="launch-chip">
+      <div class="live-dot"></div>Launching Soon
+    </div>
+  </nav>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     PAGE
+     ════════════════════════════════════════════════ -->
+<div class="page">
+
+  <!-- ── COUNTDOWN ─────────────────────────────── -->
+  <div class="countdown">
+    <div class="cd-unit"><span class="cd-num" id="cd-d">18</span><span class="cd-lbl">Days</span></div>
+    <span class="cd-sep">:</span>
+    <div class="cd-unit"><span class="cd-num" id="cd-h">00</span><span class="cd-lbl">Hours</span></div>
+    <span class="cd-sep">:</span>
+    <div class="cd-unit"><span class="cd-num" id="cd-m">00</span><span class="cd-lbl">Mins</span></div>
+    <span class="cd-sep">:</span>
+    <div class="cd-unit"><span class="cd-num" id="cd-s">00</span><span class="cd-lbl">Secs</span></div>
+  </div>
+
+  <!-- ── HERO ──────────────────────────────────── -->
+  <div class="hero-tag">
+    <div class="live-dot"></div>Early Access — First 500 get Solo free for 3 months
+  </div>
+
+  <h1 class="hero-h">
+    <span class="wh">Scan your app </span><span class="gr">before</span><br>
+    <span class="wh">hackers do it </span><span class="cy">for you.</span>
+  </h1>
+
+  <p class="hero-sub">
+    Vibesecur catches the security holes <strong>Lovable, Cursor, Bolt and v0</strong> leave behind — exposed API keys, missing Supabase RLS, broken auth — as your AI writes them. <strong>60 seconds. Free. Zero expertise needed.</strong>
+  </p>
+
+  <!-- ── PROGRESS ───────────────────────────────── -->
+  <div class="prog-wrap">
+    <div class="prog-meta">
+      <span id="prog-lbl">Waitlist spots filled</span>
+      <em id="prog-count">311 / 500 early access spots</em>
+    </div>
+    <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
+  </div>
+
+  <!-- ── FORM ──────────────────────────────────── -->
+  <div class="form-wrap">
+    <div class="form-box" id="form-box">
+      <input class="form-inp" id="email-inp" type="email"
+        placeholder="your@email.com — get early access free"
+        autocomplete="email" onkeydown="if(event.key==='Enter')joinList()">
+      <button class="form-btn" id="form-btn" onclick="joinList()">Join Waitlist →</button>
+    </div>
+    <div class="success-state" id="suc">
+      <div class="suc-icon">🛡</div>
+      <div class="suc-title">You're on the list.</div>
+      <div class="suc-pos">Position #<span id="pos-num">312</span></div>
+      <div class="suc-sub">We'll email you the moment we launch. First 500 get Solo plan free for 3 months.</div>
+    </div>
+    <div class="form-note">No spam. One email at launch. Your code is never stored — ever.</div>
+  </div>
+
+  <!-- ── TRUST ──────────────────────────────────── -->
+  <div class="trust-row">
+    <div class="tp">⚡ Results in 60 seconds</div>
+    <div class="tp">🔒 Code never leaves your browser</div>
+    <div class="tp">✅ No account needed</div>
+    <div class="tp">🌐 No API key required</div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- ════════════════════════════════════════════
+       THE PROBLEM
+       ════════════════════════════════════════════ -->
+  <div class="problem-section">
+
+    <div class="sec-label red">The Problem</div>
+    <h2 class="sec-h">You shipped. <span class="rd">Now you can't sleep.</span></h2>
+    <p class="sec-body">You built something real with AI. That's the hard part, and you already did it. But there's a voice in the back of your head every time you check the dashboard: <strong>what if someone gets in?</strong></p>
+
+    <div class="incident-grid">
+      <div class="incident-card">
+        <div class="ic-badge">⚠ Cursor SaaS · March 2025</div>
+        <div class="ic-quote">"guys, i'm under attack — people are bypassing my paywall and maxing out my API keys."</div>
+        <div class="ic-who">— Leo, building in public · 3 days after launch</div>
+        <div class="ic-dmg">Paywall bypass + API abuse</div>
+      </div>
+      <div class="incident-card">
+        <div class="ic-badge">⚠ Vibe-coded SaaS · 2025</div>
+        <div class="ic-quote">"I had no idea I'd just planted a time bomb. My Stripe live key was sitting in my frontend bundle the whole time."</div>
+        <div class="ic-who">— Anton, solo founder</div>
+        <div class="ic-dmg">$87,500 in fraudulent charges</div>
+      </div>
+      <div class="incident-card">
+        <div class="ic-badge">⚠ CVE-2025-48757 · Lovable · May 2025</div>
+        <div class="ic-quote">"170 Lovable apps had their entire databases readable by anyone with a browser. One missing checkbox."</div>
+        <div class="ic-who">— Matt Palmer, security researcher</div>
+        <div class="ic-dmg">170 apps · full DB exposure</div>
+      </div>
+      <div class="incident-card">
+        <div class="ic-badge">⚠ Vibe-coded app · January 2026</div>
+        <div class="ic-quote">"The platform was entirely built by AI. Within 3 days of launch, the entire production database was public."</div>
+        <div class="ic-who">— Wiz Research, on Moltbook breach</div>
+        <div class="ic-dmg">1.5M API tokens leaked</div>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-box" style="--sb-c:rgba(255,59,48,.8)">
+        <div class="stat-n" style="color:#FF3B30">45%</div>
+        <div class="stat-l">of AI-generated code has a critical security flaw</div>
+        <div class="stat-src">Veracode, 2025</div>
+      </div>
+      <div class="stat-box" style="--sb-c:rgba(0,200,255,.7)">
+        <div class="stat-n" style="color:#00C8FF">2.74×</div>
+        <div class="stat-l">more vulnerable than human-written code</div>
+        <div class="stat-src">GitHub PR analysis, Dec 2025</div>
+      </div>
+      <div class="stat-box" style="--sb-c:rgba(255,159,10,.7)">
+        <div class="stat-n" style="color:#FF9F0A">3 days</div>
+        <div class="stat-l">average time to first attack after launch</div>
+        <div class="stat-src">Community data, 2025</div>
+      </div>
+    </div>
+
+    <div class="root-box">
+      <div class="root-label">Root cause</div>
+      <div class="root-title">AI tools are built to make code work — not to make it safe.</div>
+      <div class="root-body">
+        Every time you prompt Lovable, Cursor, Bolt or v0, the model optimizes for one thing: <strong>does the feature work?</strong> Security is a non-functional requirement — no test suite, no error message, no red underline. The AI ships it and moves on. The password gets hashed with MD5. The JWT never expires. The Supabase table has RLS enabled but no policies. <strong>Everything looks fine until someone with 15 lines of Python finds the gap.</strong>
+      </div>
+      <div class="vuln-tags">
+        <div class="vtag">Hardcoded API keys</div>
+        <div class="vtag">Missing Supabase RLS</div>
+        <div class="vtag">MD5 password hashing</div>
+        <div class="vtag">No JWT expiry</div>
+        <div class="vtag">Wildcard CORS</div>
+        <div class="vtag">No rate limiting</div>
+        <div class="vtag">SQL injection risk</div>
+        <div class="vtag">eval() in Python</div>
+        <div class="vtag">Debug mode on</div>
+        <div class="vtag">Stack traces exposed</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- ════════════════════════════════════════════
+       THE SOLUTION
+       ════════════════════════════════════════════ -->
+  <div class="solution-section">
+
+    <div class="sec-label green">The Solution</div>
+    <h2 class="sec-h">Security that <span class="gr">works as you build</span> —<br>not after you've already shipped.</h2>
+    <p class="sec-body">Vibesecur is the only scanner that catches vulnerabilities <strong>inside your IDE as your AI writes them</strong>, and in your browser before you deploy — without a terminal, a sales call, or your code ever leaving your machine.</p>
+
+    <div class="steps">
+      <div class="step-card" style="--sc:rgba(0,245,168,.7)">
+        <div class="step-num" style="background:var(--green)">1</div>
+        <div>
+          <div class="step-title">Paste your code or connect via MCP</div>
+          <div class="step-desc">Drop any code from <strong>Lovable, Cursor, Bolt, v0, Replit, Windsurf, or Google AI Studio</strong> into the web scanner. Or install the MCP Server in Cursor once — every file your AI writes gets scanned automatically, before you even see it.</div>
+          <div class="step-chip">Works on all 23 vibe coding platforms</div>
+        </div>
+      </div>
+      <div class="step-card" style="--sc:rgba(0,200,255,.7)">
+        <div class="step-num" style="background:var(--cyan)">2</div>
+        <div>
+          <div class="step-title">Get a plain-English security score in 60 seconds</div>
+          <div class="step-desc">60+ checks run instantly — <strong>hardcoded secrets, missing Supabase RLS, broken auth, SQL injection, Python-specific risks</strong>. Every finding explained in plain English. No security expertise needed. Your code never leaves your browser.</div>
+          <div class="step-chip">60+ checks · 0 bytes stored</div>
+        </div>
+      </div>
+      <div class="step-card" style="--sc:rgba(0,245,168,.7)">
+        <div class="step-num" style="background:var(--green)">3</div>
+        <div>
+          <div class="step-title">Copy the fix, paste it back into your AI tool</div>
+          <div class="step-desc">Every finding includes the <strong>exact prompt to paste back into Lovable or Cursor</strong> to fix it. You don't need to know what RLS, JWT, or CORS mean. You just need to paste. Scan again to confirm. Ship with confidence.</div>
+          <div class="step-chip">One-click fix prompts for every issue</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="feat-grid">
+      <div class="feat-card" style="--fc:rgba(0,245,168,.35)">
+        <span class="feat-icon">🔑</span>
+        <div class="feat-title">Finds secrets before hackers do</div>
+        <div class="feat-desc">Stripe keys, OpenAI keys, Supabase service_role, AWS AKIA, JWT secrets — any line, any file, including minified bundles.</div>
+        <span class="feat-chip free">Free</span>
+      </div>
+      <div class="feat-card" style="--fc:rgba(0,200,255,.35)">
+        <span class="feat-icon">🛡</span>
+        <div class="feat-title">Supabase RLS — the flaw 1 in 10 apps have</div>
+        <div class="feat-desc">The exact check that catches CVE-2025-48757. Scans every table and every policy — not just whether the toggle is on.</div>
+        <span class="feat-chip free">Free</span>
+      </div>
+      <div class="feat-card" style="--fc:rgba(0,245,168,.35)">
+        <span class="feat-icon">🔐</span>
+        <div class="feat-title">Auth that actually protects your users</div>
+        <div class="feat-desc">MD5 passwords, no JWT expiry, wildcard CORS, no rate limiting on login — the four patterns AI consistently gets wrong.</div>
+        <span class="feat-chip free">Free</span>
+      </div>
+      <div class="feat-card" style="--fc:rgba(255,140,66,.35)">
+        <span class="feat-icon">💳</span>
+        <div class="feat-title">Payment bypass detection</div>
+        <div class="feat-desc">Paywall checks in React state, webhooks without signature verification. Anton's $87,500 mistake — caught before deploy.</div>
+        <span class="feat-chip free">Free</span>
+      </div>
+      <div class="feat-card" style="--fc:rgba(0,200,255,.35)">
+        <span class="feat-icon">🐍</span>
+        <div class="feat-title">Full Python coverage</div>
+        <div class="feat-desc">eval(), pickle.loads(), subprocess shell=True, Django CSRF disabled, Flask debug mode — vulnerabilities every Python AI generates.</div>
+        <span class="feat-chip paid">Solo / Pro</span>
+      </div>
+      <div class="feat-card" style="--fc:rgba(191,90,242,.35)">
+        <span class="feat-icon">📜</span>
+        <div class="feat-title">IP Passport for investor due diligence</div>
+        <div class="feat-desc">Timestamped certificate of your code's security posture. Answers Series A due-diligence questions before they're asked.</div>
+        <span class="feat-chip paid">Solo / Pro</span>
+      </div>
+    </div>
+
+    <div class="quote-box">
+      <div class="qt">"When we vibe-coded an app and asked the AI to audit itself, it claimed a <strong>378% security improvement</strong> — a number it made up. A human pentester still found SQL injection, CSP bypasses, and a billing bug that let the app pay the customer."</div>
+      <div class="qa">— NetSPI, Vibe Coding: A Pentester's Dream (2025)</div>
+    </div>
+    <p style="font-size:13px;color:var(--t4);text-align:left;margin-bottom:48px;font-family:var(--font-mono);line-height:1.6;padding:0 4px">Vibesecur runs <strong style="color:var(--t3)">deterministic checks</strong> against the patterns AI tools get wrong — not another LLM prompt with the same blind spots that created the problem.</p>
+
+    <div class="sec-label blue" style="margin-bottom:16px">Why Vibesecur wins</div>
+    <div class="vs-table">
+      <div class="vs-head">
+        <div></div>
+        <div class="vs-col us">Vibesecur</div>
+        <div class="vs-col them">Alternatives</div>
+      </div>
+      <div class="vs-row"><div class="vs-feat">Works inside Cursor/Windsurf as AI writes</div><div class="vs-val yes">✓</div><div class="vs-val no">✗</div></div>
+      <div class="vs-row"><div class="vs-feat">Code never leaves your browser</div><div class="vs-val yes">✓</div><div class="vs-val no">✗</div></div>
+      <div class="vs-row"><div class="vs-feat">No account or API key to start</div><div class="vs-val yes">✓</div><div class="vs-val no">✗</div></div>
+      <div class="vs-row"><div class="vs-feat">Plain-English fixes non-developers understand</div><div class="vs-val yes">✓</div><div class="vs-val no">✗</div></div>
+      <div class="vs-row"><div class="vs-feat">Tuned for Lovable / Bolt / v0 specific failures</div><div class="vs-val yes">✓</div><div class="vs-val no">✗</div></div>
+      <div class="vs-row"><div class="vs-feat">Results in 60 seconds · free tier</div><div class="vs-val yes">✓</div><div class="vs-val meh">$500–$2,500</div></div>
+      <div class="vs-row"><div class="vs-feat">IP Passport for investor due diligence</div><div class="vs-val yes">✓</div><div class="vs-val no">✗</div></div>
+    </div>
+
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- ── PLATFORMS ──────────────────────────────── -->
+  <div class="plat-section">
+    <div class="plat-label">Works with every vibe coding platform</div>
+    <div class="plat-row">
+      <div class="plat-pill">Cursor</div>
+      <div class="plat-pill">Windsurf</div>
+      <div class="plat-pill">Lovable</div>
+      <div class="plat-pill">Bolt.new</div>
+      <div class="plat-pill">v0 by Vercel</div>
+      <div class="plat-pill">Replit</div>
+      <div class="plat-pill">Google AI Studio</div>
+      <div class="plat-pill">Emergent</div>
+      <div class="plat-pill">Claude Dev</div>
+      <div class="plat-pill">Continue.dev</div>
+      <div class="plat-pill">Base44</div>
+      <div class="plat-pill">Tempo Labs</div>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- ── BOTTOM WAITLIST CTA ────────────────────── -->
+  <div class="waitlist-section">
+    <div class="waitlist-card">
+      <div class="wc-eyebrow">🚀 Early Access · Launching Soon</div>
+      <div class="wc-h">You built it in a weekend.<br><span class="gr">Secure it in 60 seconds.</span></div>
+      <div class="wc-sub">Don't be the next founder tweeting "guys, i'm under attack." Join the waitlist — <strong>first 500 users get 3 months of Solo free.</strong></div>
+
+      <div class="perk-list">
+        <div class="perk-item"><div class="perk-icon">✓</div><div><strong>Solo plan free for 3 months</strong> — unlimited scans, all 15 MCP tools, IP Passport ($27 value)</div></div>
+        <div class="perk-item"><div class="perk-icon">✓</div><div><strong>MCP Server 2 weeks early</strong> — scan as Cursor writes, before public launch</div></div>
+        <div class="perk-item"><div class="perk-icon">✓</div><div><strong>$9/mo locked forever</strong> — pricing increases post-launch, you keep the founding rate</div></div>
+        <div class="perk-item"><div class="perk-icon">✓</div><div><strong>Free IP Passport on day one</strong> — timestamped security cert for your investor data room</div></div>
+        <div class="perk-item"><div class="perk-icon">✓</div><div><strong>Direct line to founders</strong> — private Slack, your feedback ships first</div></div>
+      </div>
+
+      <div class="prog-wrap" style="margin-bottom:16px;animation:none">
+        <div class="prog-meta">
+          <span id="prog-lbl-b">Waitlist spots filled</span>
+          <em id="prog-count-b">311 / 500 early access spots</em>
+        </div>
+        <div class="prog-track"><div class="prog-fill" id="prog-fill-b" style="width:62.2%"></div></div>
+      </div>
+
+      <div class="form-box" id="form-box-b" style="margin-bottom:12px">
+        <input class="form-inp" id="email-inp-b" type="email" placeholder="your@email.com — get early access free" autocomplete="email" onkeydown="if(event.key==='Enter')joinListB()">
+        <button class="form-btn" id="form-btn-b" onclick="joinListB()">Join Waitlist →</button>
+      </div>
+      <div class="success-state" id="suc-b">
+        <div class="suc-icon">🛡</div>
+        <div class="suc-title">You're on the list.</div>
+        <div class="suc-pos">Position #<span id="pos-num-b">312</span></div>
+        <div class="suc-sub">We'll email you the moment we launch. First 500 get Solo free for 3 months.</div>
+      </div>
+      <div style="font-family:var(--font-mono);font-size:10px;color:var(--t4);text-align:center;line-height:1.6;margin-top:10px">No spam. One email at launch. Your code is never stored — ever.</div>
+    </div>
+  </div>
+
+  <!-- ── SOCIAL STRIP ───────────────────────────── -->
+  <div class="social-row">
+    <div class="si">⚡ Works with Cursor</div><div class="sdiv2"></div>
+    <div class="si">🛡 Fixes the Lovable CVE</div><div class="sdiv2"></div>
+    <div class="si">🐍 JS + Python covered</div><div class="sdiv2"></div>
+    <div class="si">🔒 Zero data stored</div><div class="sdiv2"></div>
+    <div class="si">📜 Investor IP Passport</div>
+  </div>
+
+  <!-- ── FOOTER ─────────────────────────────────── -->
+  <div class="foot">
+    Built by a founder who scanned their own Lovable app and found 4 critical issues before launch.<br><br>
+    <a href="mailto:hello@vibesecur.dev">hello@vibesecur.dev</a> · vibesecur.dev · Powered by Claude AI
+  </div>
+
+</div>
+
+<!-- ─────────────────────────────────────────────────
+     SCRIPTS
+     ───────────────────────────────────────────────── -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ── CURSOR ──────────────────────────────────────── */
+const cur = document.getElementById('cur');
+const ring = document.getElementById('ring');
+document.addEventListener('mousemove', e => {
+  cur.style.left  = e.clientX + 'px';
+  cur.style.top   = e.clientY + 'px';
+  ring.style.left = e.clientX + 'px';
+  ring.style.top  = e.clientY + 'px';
+});
+document.querySelectorAll('button, .feat-card, .step-card, .incident-card, .plat-pill, .cd-unit, .vs-row').forEach(el => {
+  el.addEventListener('mouseenter', () => { cur.classList.add('hover'); ring.classList.add('hover'); });
+  el.addEventListener('mouseleave', () => { cur.classList.remove('hover'); ring.classList.remove('hover'); });
+});
+
+/* ── THREE.JS — refined sphere, darker opacity ───── */
+(function () {
+  const canvas = document.getElementById('bg-canvas');
+  if (!window.THREE || !canvas) return;
+
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+
+  const scene = new THREE.Scene();
+  const cam   = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
+  cam.position.set(0, 0, 22);
+
+  function resize() {
+    renderer.setSize(window.innerWidth, window.innerHeight, false);
+    cam.aspect = window.innerWidth / window.innerHeight;
+    cam.updateProjectionMatrix();
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  /* Group positioned bottom-right */
+  const group = new THREE.Group();
+  group.position.set(7, -5, -5);
+  scene.add(group);
+
+  /* Icosahedron wireframe — lighter opacity for Apple refinement */
+  const ico = new THREE.Mesh(
+    new THREE.IcosahedronGeometry(6.5, 1),
+    new THREE.MeshBasicMaterial({ color: 0x00F5A8, wireframe: true, opacity: .22, transparent: true })
+  );
+  group.add(ico);
+
+  /* Orbit ring 1 */
+  const r1 = new THREE.Mesh(
+    new THREE.TorusGeometry(9.2, .018, 8, 140),
+    new THREE.MeshBasicMaterial({ color: 0x00F5A8, opacity: .10, transparent: true })
+  );
+  r1.rotation.x = Math.PI / 2.5;
+  group.add(r1);
+
+  /* Orbit ring 2 */
+  const r2 = new THREE.Mesh(
+    new THREE.TorusGeometry(7.2, .013, 8, 120),
+    new THREE.MeshBasicMaterial({ color: 0x00C8FF, opacity: .06, transparent: true })
+  );
+  r2.rotation.x = Math.PI / 3.8;
+  r2.rotation.z = Math.PI / 5;
+  group.add(r2);
+
+  /* Orbiting dot */
+  const dot = new THREE.Mesh(
+    new THREE.SphereGeometry(.18, 12, 12),
+    new THREE.MeshBasicMaterial({ color: 0x00F5A8 })
+  );
+  group.add(dot);
+
+  /* Point cloud */
+  const pg = new THREE.BufferGeometry();
+  const pa = new Float32Array(180 * 3);
+  for (let i = 0; i < 180; i++) {
+    pa[i*3]   = (Math.random() - .5) * 80 - 3;
+    pa[i*3+1] = (Math.random() - .5) * 65;
+    pa[i*3+2] = (Math.random() - .5) * 45 - 15;
+  }
+  pg.setAttribute('position', new THREE.BufferAttribute(pa, 3));
+  const pm = new THREE.PointsMaterial({ color: 0x00F5A8, size: .09, opacity: .15, transparent: true });
+  scene.add(new THREE.Points(pg, pm));
+
+  scene.add(new THREE.AmbientLight(0xffffff, .08));
+
+  let mx = 0, my = 0;
+  document.addEventListener('mousemove', e => {
+    mx = (e.clientX / window.innerWidth  - .5) * 2;
+    my = (e.clientY / window.innerHeight - .5) * 2;
+  });
+
+  const clock = new THREE.Clock();
+  (function loop() {
+    requestAnimationFrame(loop);
+    const t = clock.getElapsedTime();
+    ico.rotation.y = t * .07;
+    ico.rotation.x = t * .025 + Math.sin(t * .1) * .08;
+    r1.rotation.z  = t * .045;
+    r2.rotation.y  = t * .055;
+    const a = t * .35;
+    dot.position.set(
+      -3 + 6.5 * Math.cos(a) * Math.sin(1.1),
+      6.5 * Math.sin(a * .65) - .5,
+      6.5 * Math.cos(a * .5)
+    );
+    cam.position.x += (mx * 1.2 - cam.position.x) * .03;
+    cam.position.y += (-my * .9  - cam.position.y) * .03;
+    cam.lookAt(scene.position);
+    pm.opacity = .10 + Math.sin(t * .5) * .05;
+    renderer.render(scene, cam);
+  })();
+})();
+
+/* ── SCATTERED PARTICLES — very dim, Apple-style ─── */
+(function () {
+  const container = document.getElementById('scatter');
+  const colors = ['rgba(0,245,168,', 'rgba(0,200,255,', 'rgba(255,255,255,'];
+  for (let i = 0; i < 55; i++) {
+    const d   = document.createElement('div');
+    d.className = 'sdot';
+    const sz   = (1 + Math.random() * 2).toFixed(1);
+    const col  = colors[Math.floor(Math.random() * colors.length)];
+    const isRound = Math.random() > .35;
+    const lo   = (.02 + Math.random() * .06).toFixed(2);
+    const hi   = (.10 + Math.random() * .18).toFixed(2);
+    const dur  = (5 + Math.random() * 10).toFixed(1);
+    const del  = (Math.random() * 8).toFixed(1);
+    d.style.cssText = `
+      width:${sz}px; height:${sz}px;
+      background:${col}0.5);
+      left:${(Math.random() * 100).toFixed(2)}%;
+      top:${(Math.random() * 100).toFixed(2)}%;
+      border-radius:${isRound ? '50%' : '1px'};
+      --lo:${lo}; --hi:${hi}; --d:${dur}s; --dl:${del}s;
+    `;
+    container.appendChild(d);
+  }
+})();
+
+/* ── COUNTDOWN ───────────────────────────────────── */
+const LAUNCH = new Date(Date.now() + 18 * 864e5);
+function pad(n) { return String(n).padStart(2, '0'); }
+function tick() {
+  const d = LAUNCH - Date.now();
+  if (d <= 0) return;
+  document.getElementById('cd-d').textContent = pad(Math.floor(d / 864e5));
+  document.getElementById('cd-h').textContent = pad(Math.floor((d % 864e5) / 36e5));
+  document.getElementById('cd-m').textContent = pad(Math.floor((d % 36e5)  / 6e4));
+  document.getElementById('cd-s').textContent = pad(Math.floor((d % 6e4)   / 1e3));
+}
+tick();
+setInterval(tick, 1000);
+
+/* ── SPOT TRICKLE ────────────────────────────────── */
+let spots = 311;
+function syncSpots() {
+  const pct = (spots / 500 * 100).toFixed(1) + '%';
+  ['prog-fill','prog-fill-b'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.width = pct;
+  });
+  ['prog-count','prog-count-b'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = spots + ' / 500 early access spots';
+  });
+}
+setInterval(() => {
+  if (spots >= 499 || Math.random() > .28) return;
+  spots++;
+  syncSpots();
+}, 7000 + Math.random() * 10000);
+
+/* ── FORM (top) ──────────────────────────────────── */
+let joined = false;
+function joinList() {
+  if (joined) return;
+  const email = document.getElementById('email-inp').value.trim();
+  if (!email || !email.includes('@')) { showToast('⚠ Please enter a valid email'); return; }
+  const btn = document.getElementById('form-btn');
+  btn.textContent = 'Joining...'; btn.disabled = true;
+  setTimeout(() => {
+    joined = true;
+    spots = Math.min(spots + 1, 499);
+    syncSpots();
+    document.getElementById('pos-num').textContent = spots;
+    document.getElementById('prog-lbl').textContent = "🎉 You're on the list!";
+    document.getElementById('form-box').style.display = 'none';
+    document.getElementById('suc').style.display = 'flex';
+    showToast('🛡 Welcome to Vibesecur early access!');
+  }, 1100);
+}
+
+/* ── FORM (bottom) ───────────────────────────────── */
+let joinedB = false;
+function joinListB() {
+  if (joinedB) return;
+  const email = document.getElementById('email-inp-b').value.trim();
+  if (!email || !email.includes('@')) { showToast('⚠ Please enter a valid email'); return; }
+  const btn = document.getElementById('form-btn-b');
+  btn.textContent = 'Joining...'; btn.disabled = true;
+  setTimeout(() => {
+    joinedB = true;
+    spots = Math.min(spots + 1, 499);
+    syncSpots();
+    document.getElementById('pos-num-b').textContent = spots;
+    document.getElementById('prog-lbl-b').textContent = "🎉 You're on the list!";
+    document.getElementById('form-box-b').style.display = 'none';
+    document.getElementById('suc-b').style.display = 'flex';
+    showToast('🛡 Welcome to Vibesecur early access!');
+  }, 1100);
+}
+
+/* ── TOAST ───────────────────────────────────────── */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3800);
+}
+</script>
+</body>
+</html>

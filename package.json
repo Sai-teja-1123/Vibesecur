@@ -1,0 +1,28 @@
+{
+  "name": "vibesecur",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Vibesecur — AI-powered security platform for vibe-coded applications",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "tools/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @vibesecur/api",
+    "dev:web": "serve apps/web -l tcp://127.0.0.1:3000",
+    "dev:mcp": "npm run dev -w @vibesecur/mcp-server",
+    "start": "npm run start -w @vibesecur/api",
+    "start:mcp": "npm run start -w @vibesecur/mcp-server",
+    "db:migrate": "npm run db:migrate -w @vibesecur/api",
+    "db:seed": "npm run db:seed -w @vibesecur/api",
+    "test": "npm run test -w @vibesecur/api",
+    "install:all": "npm install"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "devDependencies": {
+    "serve": "^14.2.4"
+  }
+}

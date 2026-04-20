@@ -1,0 +1,42 @@
+{
+  "name": "vibesecur-scan",
+  "displayName": "Vibesecur Scan",
+  "description": "One-click workspace security scan using the Vibesecur rule engine (Output panel).",
+  "version": "0.1.0",
+  "publisher": "vibesecur-local",
+  "private": true,
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "vibesecur.scanWorkspace",
+        "title": "Vibesecur: Scan Workspace"
+      },
+      {
+        "command": "vibesecur.copyMcpPrompt",
+        "title": "Vibesecur: Copy MCP scanRepo prompt"
+      }
+    ],
+    "configuration": {
+      "title": "Vibesecur",
+      "properties": {
+        "vibesecur.maxFiles": {
+          "type": "number",
+          "default": 400,
+          "minimum": 1,
+          "maximum": 5000,
+          "description": "Maximum number of files to read per scan (cap)."
+        }
+      }
+    }
+  }
+}

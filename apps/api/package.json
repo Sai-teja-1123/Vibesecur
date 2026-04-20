@@ -1,0 +1,37 @@
+{
+  "name": "@vibesecur/api",
+  "version": "1.0.0",
+  "description": "Vibesecur Backend API — AI-powered security for vibe-coded apps",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "db:migrate": "node utils/migrate.js",
+    "db:seed": "node utils/seed.js",
+    "security:check": "node utils/selfcheck.js",
+    "test": "node --test tests/"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.24.0",
+    "@vibesecur/rule-engine": "file:../../packages/rule-engine",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.3.1",
+    "express-validator": "^7.2.0",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "pg": "^8.12.0",
+    "pino": "^9.3.2",
+    "pino-http": "^10.3.0",
+    "resend": "^3.4.0",
+    "stripe": "^16.4.0",
+    "uuid": "^10.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
