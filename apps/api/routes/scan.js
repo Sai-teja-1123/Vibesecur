@@ -17,8 +17,7 @@ const normalizeCodeHash = (raw, meta) => {
 };
 
 const scanReceiptSecret = () =>
-  process.env.JWT_SECRET
-  || (process.env.NODE_ENV !== 'production' ? 'vibesecur-dev-scan-receipt' : '');
+  process.env.JWT_SECRET || '';
 
 /** Lets POST /scan/log skip a second quota increment after POST /scan/local (same codeHash + projectHash). */
 function signScanReceipt(projectHash, codeHash) {
@@ -262,9 +261,10 @@ router.post('/full',
       res.json({
         success: true,
         data: {
-          // Client uses this to call Claude directly from browser
-          // Vibesecur server never sees the code — only the token
-          apiKey: process.env.ANTHROPIC_API_KEY || null,
+          // Never expose server-managed provider keys to clients.
+          // Clients must use BYOK, or server-side proxy calls.
+          apiKey: null,
+          hostedAiEnabled: false,
           model: process.env.CLAUDE_MODEL || 'claude-sonnet-4-20250514',
           scanToken: Buffer.from(JSON.stringify(scanToken)).toString('base64'),
           expiresIn: 30,

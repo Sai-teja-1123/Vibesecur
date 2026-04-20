@@ -55,7 +55,7 @@ router.post('/checkout', requireAuth, async (req,res,next) => {
 router.post('/webhook', async (req,res,next) => {
   try {
     const sig   = req.headers['stripe-signature'];
-    const event = stripe.webhooks.constructEvent(req.rawBody||req.body, sig, process.env.STRIPE_WEBHOOK_SECRET||'');
+    const event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
 
     if (event.type === 'customer.subscription.updated' || event.type === 'customer.subscription.created') {
       const sub  = event.data.object;

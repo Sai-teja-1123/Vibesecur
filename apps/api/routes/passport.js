@@ -9,6 +9,7 @@ import { requirePlan } from '../middleware/plans.js';
 import { query } from '../utils/db.js';
 
 const router = Router();
+const watermarkSecret = process.env.WATERMARK_SECRET;
 
 // POST /passport/generate
 router.post('/generate',
@@ -31,7 +32,7 @@ router.post('/generate',
       const timestamp   = new Date().toISOString();
       const fingerprint = crypto.createHash('sha256')
         .update(s.code_hash + req.user.id + timestamp).digest('hex');
-      const watermarkId = crypto.createHmac('sha256', process.env.WATERMARK_SECRET || 'dev-secret')
+      const watermarkId = crypto.createHmac('sha256', watermarkSecret)
         .update(fingerprint).digest('base64url').slice(0,16);
 
       const result = await query(
@@ -81,7 +82,7 @@ router.post('/verify',
   async (req,res,next) => {
     try {
       const { watermarkId, fingerprint } = req.body;
-      const expected = crypto.createHmac('sha256', process.env.WATERMARK_SECRET || 'dev-secret')
+      const expected = crypto.createHmac('sha256', watermarkSecret)
         .update(fingerprint).digest('base64url').slice(0,16);
       const valid = watermarkId.length === expected.length &&
         crypto.timingSafeEqual(Buffer.from(watermarkId), Buffer.from(expected));

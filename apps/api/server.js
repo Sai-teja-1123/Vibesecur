@@ -20,6 +20,34 @@ import billingRoutes from './routes/billing.js';
 import adminRoutes   from './routes/admin.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
+const requireEnv = (name, options = {}) => {
+  const value = process.env[name];
+  if (!value || !String(value).trim()) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+  if (options.rejectValues?.includes(value)) {
+    throw new Error(`Unsafe value for environment variable: ${name}`);
+  }
+  return value;
+};
+
+const validateEnv = () => {
+  const env = process.env.NODE_ENV || 'development';
+  requireEnv('JWT_SECRET', {
+    rejectValues: ['REPLACE_WITH_64_CHAR_RANDOM_STRING', 'vibesecur-dev-scan-receipt', 'dev-secret'],
+  });
+  requireEnv('WATERMARK_SECRET', {
+    rejectValues: ['REPLACE_WITH_64_CHAR_RANDOM_STRING', 'dev-secret'],
+  });
+
+  if (env === 'production') {
+    requireEnv('CORS_ORIGIN');
+    requireEnv('STRIPE_WEBHOOK_SECRET');
+  }
+};
+
+validateEnv();
+
 const app  = express();
 const log  = createLogger('server');
 const PORT = process.env.PORT || 4000;
@@ -49,6 +77,7 @@ app.use(cors({
 }));
 
 // ── Body parsing ──────────────────────────────────────────
+app.use('/api/v1/billing/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '50kb' }));  // Small — we never accept code bodies
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
