@@ -1312,6 +1312,41 @@ setInterval(() => {
   syncSpots();
 }, 7000 + Math.random() * 10000);
 
+/* ── Waitlist API ────────────────────────────────── */
+const isLocalHost =
+  window.location.hostname === 'localhost' ||
+  window.location.hostname === '127.0.0.1' ||
+  window.location.hostname === '0.0.0.0' ||
+  window.location.protocol === 'file:';
+const API_BASE = isLocalHost
+  ? 'http://localhost:4000/api/v1'
+  : 'https://api.vibesecur.dev/api/v1';
+
+async function postWaitlist(email) {
+  const res = await fetch(`${API_BASE}/waitlist`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+  const payload = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const msg = payload && payload.error ? String(payload.error) : 'Could not join waitlist — try again soon';
+    throw new Error(msg);
+  }
+  return payload.data;
+}
+
+function showWaitlistSuccess({ position, totalSignups }, posId, lblId, boxId, sucId) {
+  const filled = typeof totalSignups === 'number' ? totalSignups : position;
+  spots = Math.min(filled, 499);
+  syncSpots();
+  document.getElementById(posId).textContent = position;
+  document.getElementById(lblId).textContent = "🎉 You're on the list!";
+  document.getElementById(boxId).style.display = 'none';
+  document.getElementById(sucId).style.display = 'flex';
+  showToast('🛡 Welcome to Vibesecur early access!');
+}
+
 /* ── FORM (top) ──────────────────────────────────── */
 let joined = false;
 function joinList() {
@@ -1320,16 +1355,15 @@ function joinList() {
   if (!email || !email.includes('@')) { showToast('⚠ Please enter a valid email'); return; }
   const btn = document.getElementById('form-btn');
   btn.textContent = 'Joining...'; btn.disabled = true;
-  setTimeout(() => {
-    joined = true;
-    spots = Math.min(spots + 1, 499);
-    syncSpots();
-    document.getElementById('pos-num').textContent = spots;
-    document.getElementById('prog-lbl').textContent = "🎉 You're on the list!";
-    document.getElementById('form-box').style.display = 'none';
-    document.getElementById('suc').style.display = 'flex';
-    showToast('🛡 Welcome to Vibesecur early access!');
-  }, 1100);
+  postWaitlist(email)
+    .then((data) => {
+      joined = true;
+      showWaitlistSuccess(data, 'pos-num', 'prog-lbl', 'form-box', 'suc');
+    })
+    .catch((err) => {
+      showToast(err.message || 'Something went wrong');
+      btn.textContent = 'Join Waitlist →'; btn.disabled = false;
+    });
 }
 
 /* ── FORM (bottom) ───────────────────────────────── */
@@ -1340,16 +1374,15 @@ function joinListB() {
   if (!email || !email.includes('@')) { showToast('⚠ Please enter a valid email'); return; }
   const btn = document.getElementById('form-btn-b');
   btn.textContent = 'Joining...'; btn.disabled = true;
-  setTimeout(() => {
-    joinedB = true;
-    spots = Math.min(spots + 1, 499);
-    syncSpots();
-    document.getElementById('pos-num-b').textContent = spots;
-    document.getElementById('prog-lbl-b').textContent = "🎉 You're on the list!";
-    document.getElementById('form-box-b').style.display = 'none';
-    document.getElementById('suc-b').style.display = 'flex';
-    showToast('🛡 Welcome to Vibesecur early access!');
-  }, 1100);
+  postWaitlist(email)
+    .then((data) => {
+      joinedB = true;
+      showWaitlistSuccess(data, 'pos-num-b', 'prog-lbl-b', 'form-box-b', 'suc-b');
+    })
+    .catch((err) => {
+      showToast(err.message || 'Something went wrong');
+      btn.textContent = 'Join Waitlist →'; btn.disabled = false;
+    });
 }
 
 /* ── TOAST ───────────────────────────────────────── */

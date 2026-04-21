@@ -3,7 +3,7 @@
 //  AI-powered security platform for vibe-coded applications
 //  Version 1.0.0 · April 2026
 // ============================================================
-import 'dotenv/config';
+import './utils/loadEnv.js';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -18,6 +18,7 @@ import keyRoutes     from './routes/keys.js';
 import passportRoutes from './routes/passport.js';
 import billingRoutes from './routes/billing.js';
 import adminRoutes   from './routes/admin.js';
+import waitlistRoutes from './routes/waitlist.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 const requireEnv = (name, options = {}) => {
@@ -42,7 +43,6 @@ const validateEnv = () => {
 
   if (env === 'production') {
     requireEnv('CORS_ORIGIN');
-    requireEnv('STRIPE_WEBHOOK_SECRET');
   }
 };
 
@@ -69,8 +69,24 @@ app.use(helmet({
 }));
 
 // ── CORS ──────────────────────────────────────────────────
+const configuredOrigins = (process.env.CORS_ORIGIN || 'http://localhost:3000')
+  .split(',')
+  .map((v) => v.trim())
+  .filter(Boolean);
+const devOrigins = ['http://localhost:3000', 'http://127.0.0.1:3000'];
+const allowedOrigins = new Set(
+  (process.env.NODE_ENV === 'production'
+    ? configuredOrigins
+    : [...configuredOrigins, ...devOrigins]),
+);
+
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  origin: (origin, cb) => {
+    // Allow same-origin/non-browser requests with no Origin header.
+    if (!origin) return cb(null, true);
+    if (allowedOrigins.has(origin)) return cb(null, true);
+    return cb(new Error(`CORS origin not allowed: ${origin}`));
+  },
   methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-session-id'],
   credentials: true,
@@ -85,7 +101,7 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(pinoHttp({
   logger: createLogger('http'),
   redact: ['req.headers.authorization', 'req.body.password',
-           'req.body.key', 'res.body.token'],
+           'req.body.key', 'req.body.email', 'res.body.token'],
   serializers: {
     req: (req) => ({ method: req.method, url: req.url, id: req.id }),
   },
@@ -124,6 +140,7 @@ app.use('/api/v1/keys',     keyRoutes);
 app.use('/api/v1/passport', passportRoutes);
 app.use('/api/v1/billing',  billingRoutes);
 app.use('/api/v1/admin',    adminRoutes);
+app.use('/api/v1/waitlist', waitlistRoutes);
 
 // ── 404 handler ───────────────────────────────────────────
 app.use((req, res) => res.status(404).json({

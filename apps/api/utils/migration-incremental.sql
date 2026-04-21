@@ -59,3 +59,12 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_project_usage_project_user
 CREATE UNIQUE INDEX IF NOT EXISTS idx_project_usage_project_session
   ON project_usage (project_hash, session_id) WHERE user_id IS NULL AND session_id IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_project_usage_project ON project_usage(project_hash);
+
+-- ── waitlist_signups (marketing landing) ─────────────────────
+CREATE TABLE IF NOT EXISTS waitlist_signups (
+  id         UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+  email      VARCHAR(255) NOT NULL,
+  created_at TIMESTAMPTZ  NOT NULL DEFAULT now(),
+  CONSTRAINT waitlist_signups_email_unique UNIQUE (email)
+);
+CREATE INDEX IF NOT EXISTS idx_waitlist_created ON waitlist_signups(created_at);

@@ -173,6 +173,15 @@ CREATE TABLE IF NOT EXISTS rate_limit_events (
 );
 CREATE INDEX idx_rle_ip_endpoint ON rate_limit_events(ip_address, endpoint);
 
+-- ── waitlist_signups (marketing landing) ─────────────────────
+CREATE TABLE IF NOT EXISTS waitlist_signups (
+  id         UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+  email      VARCHAR(255) NOT NULL,
+  created_at TIMESTAMPTZ  NOT NULL DEFAULT now(),
+  CONSTRAINT waitlist_signups_email_unique UNIQUE (email)
+);
+CREATE INDEX IF NOT EXISTS idx_waitlist_created ON waitlist_signups(created_at);
+
 -- ── Row Level Security ────────────────────────────────────────
 ALTER TABLE users           ENABLE ROW LEVEL SECURITY;
 ALTER TABLE api_keys        ENABLE ROW LEVEL SECURITY;

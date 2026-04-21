@@ -7,7 +7,20 @@ import { requireAuth } from '../middleware/auth.js';
 import { query } from '../utils/db.js';
 
 const router  = Router();
-const stripe  = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder');
+const stripeSecret = process.env.STRIPE_SECRET_KEY;
+const stripeWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+const billingEnabled = Boolean(stripeSecret && stripeWebhookSecret);
+const stripe = billingEnabled ? new Stripe(stripeSecret) : null;
+
+const ensureBillingEnabled = (res) => {
+  if (billingEnabled) return true;
+  res.status(503).json({
+    success: false,
+    error: 'Billing is not configured yet',
+    code: 'BILLING_DISABLED',
+  });
+  return false;
+};
 
 const PLANS = {
   free:  { name:'Free',  price:0,    scans:50,   features:['50 scans/month','Local engine','Basic checklist'] },
@@ -29,6 +42,7 @@ router.get('/status', requireAuth, async (req,res,next) => {
 
 router.post('/checkout', requireAuth, async (req,res,next) => {
   try {
+    if (!ensureBillingEnabled(res)) return;
     const { plan } = req.body;
     if (!['solo','pro'].includes(plan)) return res.status(400).json({ success:false, error:'Invalid plan' });
 
@@ -54,8 +68,9 @@ router.post('/checkout', requireAuth, async (req,res,next) => {
 
 router.post('/webhook', async (req,res,next) => {
   try {
+    if (!ensureBillingEnabled(res)) return;
     const sig   = req.headers['stripe-signature'];
-    const event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+    const event = stripe.webhooks.constructEvent(req.body, sig, stripeWebhookSecret);
 
     if (event.type === 'customer.subscription.updated' || event.type === 'customer.subscription.created') {
       const sub  = event.data.object;
