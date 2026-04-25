@@ -100,6 +100,19 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_project_usage_project_session
   ON project_usage (project_hash, session_id) WHERE user_id IS NULL AND session_id IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_project_usage_project ON project_usage(project_hash);
 
+-- ── mcp_installs ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS mcp_installs (
+  id                 UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id            UUID         NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  install_token_hash CHAR(64)     NOT NULL UNIQUE,
+  locked_root_hash   CHAR(64)     NOT NULL,
+  locked_root_hint   TEXT         NOT NULL,
+  created_at         TIMESTAMPTZ  NOT NULL DEFAULT now(),
+  revoked_at         TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS idx_mcp_installs_user_active
+  ON mcp_installs(user_id, created_at DESC) WHERE revoked_at IS NULL;
+
 -- ── scan_findings ─────────────────────────────────────────────
 CREATE TYPE finding_severity AS ENUM ('critical','high','medium','low');
 
@@ -199,7 +212,7 @@ CREATE POLICY passports_own_data  ON ip_passports   USING (user_id = current_set
 
 -- ── Seed: plans reference ─────────────────────────────────────
 -- (Plans are defined in code, not DB — but document here for reference)
--- free:  50 scans/day · local engine only · basic checklist
+-- free:  10 scans/month · local engine only · basic checklist
 -- solo:  unlimited scans · Claude AI · IP Passport 1/month · $9/mo
 -- pro:   unlimited · 5 projects · watermarking · investor PDF · $29/mo
 -- admin: internal use only

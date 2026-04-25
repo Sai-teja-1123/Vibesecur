@@ -38,16 +38,16 @@ Use your Cursor MCP servers config and add:
 {
   "mcpServers": {
     "vibesecur": {
-      "command": "node",
-      "args": ["O:\\vibesecur\\tools\\mcp-server\\src\\server.js"],
-      "cwd": "O:\\vibesecur",
+      "command": "npx",
+      "args": ["-y", "@vibesecur/mcp-server"],
+      "cwd": "O:\\your-project",
       "env": {}
     }
   }
 }
 ```
 
-Alternative (via npm workspace script):
+Alternative (local clone via npm workspace script):
 
 ```json
 {
@@ -62,6 +62,27 @@ Alternative (via npm workspace script):
 }
 ```
 
+## Strict one-folder lock (website download flow)
+
+To lock an MCP install to one folder only:
+
+1. Sign in on the website.
+2. Open **MCP** section and generate a locked config using your project folder path.
+3. Paste the generated JSON into `~/.cursor/mcp.json`.
+
+Generated locked config includes:
+
+- `VIBESECUR_API_BASE` (required)
+- `VIBESECUR_INSTALL_TOKEN` (single-install secret)
+- `VIBESECUR_LOCKED_ROOT` (folder binding)
+- `VIBESECUR_STRICT_LOCK=true`
+
+With strict lock enabled:
+
+- scans outside `VIBESECUR_LOCKED_ROOT` are blocked locally
+- API verifies install token + locked folder hash on every MCP scan
+- mismatched repos return `403` with lock error
+
 ## VS Code MCP config snippet
 
 In your MCP-capable extension settings (for example Cline/Continue MCP server list), add:
@@ -69,9 +90,9 @@ In your MCP-capable extension settings (for example Cline/Continue MCP server li
 ```json
 {
   "name": "vibesecur",
-  "command": "node",
-  "args": ["O:\\vibesecur\\tools\\mcp-server\\src\\server.js"],
-  "cwd": "O:\\vibesecur",
+  "command": "npx",
+  "args": ["-y", "@vibesecur/mcp-server"],
+  "cwd": "O:\\your-project",
   "env": {}
 }
 ```

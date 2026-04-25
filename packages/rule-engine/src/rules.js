@@ -13,7 +13,7 @@ export const JS_RULES = [
   { id:'A002', name:'SHA1 Password Hashing',    sev:'critical', re:/sha1\s*\(/gi,                                                   fix:'Use bcrypt or argon2 for passwords',                  cat:'Auth'    },
   { id:'A003', name:'JWT Without Expiry',       sev:'critical', re:/jwt\.sign\s*\([^)]{0,200}\)/g,                                  fix:'Add: { expiresIn: "1h" }',                            cat:'Auth'    },
   { id:'A004', name:'eval() Usage',             sev:'critical', re:/\beval\s*\(/g,                                                  fix:'Never use eval() — arbitrary code execution',         cat:'Injection'},
-  { id:'A005', name:'SQL Injection Risk',       sev:'critical', re:/(SELECT|INSERT|UPDATE|DELETE)[^;]{0,80}\+\s*(req\.|user\.)/gi,  fix:'Use parameterized queries: db.query("?", [val])',      cat:'Injection'},
+  { id:'A005', name:'SQL Injection Risk',       sev:'critical', re:/(SELECT|INSERT|UPDATE|DELETE)[^;]{0,140}(\+\s*(req\.|user\.)|\$\{\s*(req|user)\.)/gi,  fix:'Use parameterized queries: db.query("?", [val])',      cat:'Injection'},
   { id:'A006', name:'Wildcard CORS',            sev:'critical', re:/origin\s*:\s*['"]\*['"]/gi,                                     fix:'cors({ origin: process.env.ALLOWED_ORIGIN })',        cat:'CORS'    },
   { id:'A007', name:'Missing Rate Limit',       sev:'high',     re:/app\.(post|put)\s*\(['"]\/(login|auth|register)/gi,             fix:'Add rateLimit({ windowMs:900000, max:5 }) middleware', cat:'Auth'    },
   // RLS / Firebase

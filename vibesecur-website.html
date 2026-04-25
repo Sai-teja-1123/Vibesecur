@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vibesecur — Security Scanner for Vibe-Coded Apps</title>
+<meta name="description" content="Scan your Lovable, Cursor, Bolt or v0 app for security vulnerabilities in 60 seconds. Free. No account. Code never leaves your browser.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#000;--bg1:#0a0a0a;--bg2:#111;--bg3:#1a1a1a;
+  --glass:rgba(255,255,255,.04);--glass2:rgba(255,255,255,.07);
+  --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.10);--border3:rgba(255,255,255,.15);
+  --green:#00F5A8;--cyan:#00C8FF;--red:#FF3B30;--amber:#FF9F0A;--purple:#BF5AF2;
+  --w:#fff;--t2:rgba(255,255,255,.72);--t3:rgba(255,255,255,.42);--t4:rgba(255,255,255,.24);
+  --font:-apple-system,'SF Pro Display',BlinkMacSystemFont,'Helvetica Neue',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+body{font-family:var(--font);background:var(--bg);color:var(--t2);overflow-x:hidden;cursor:none}
+.cursor{position:fixed;width:8px;height:8px;background:var(--green);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:screen;transition:transform .1s}
+.cursor-ring{position:fixed;width:30px;height:30px;border:1px solid rgba(0,245,168,.35);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:all .15s}
+
+/* BG */
+.bg-glow{position:fixed;pointer-events:none;border-radius:50%;filter:blur(80px);z-index:0}
+.bg-grid{position:fixed;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,.042) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+.bg-vignette{position:fixed;inset:0;background:radial-gradient(ellipse 80% 75% at 50% 50%,transparent 22%,rgba(0,0,0,.7) 65%,rgba(0,0,0,.96) 100%);pointer-events:none;z-index:0}
+
+/* NAV */
+.nav{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:200;width:calc(100% - 32px);max-width:1100px}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:50px;background:rgba(0,0,0,.8);backdrop-filter:blur(28px);border:.5px solid var(--border2);border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.04)}
+.nav-logo{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:15px;font-weight:700;color:var(--green);text-decoration:none;cursor:none}
+.nav-logo-sq{width:28px;height:28px;border-radius:7px;background:rgba(0,245,168,.1);border:.5px solid rgba(0,245,168,.25);display:flex;align-items:center;justify-content:center;font-size:13px}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-link{font-family:var(--mono);font-size:11px;color:var(--t3);text-decoration:none;padding:6px 12px;border-radius:8px;transition:all .2s;cursor:none;background:none;border:none}
+.nav-link:hover,.nav-link.active{color:var(--green);background:rgba(0,245,168,.06)}
+.nav-cta{font-family:var(--mono);font-size:11px;font-weight:700;color:#000;background:var(--green);padding:7px 16px;border-radius:8px;text-decoration:none;cursor:none;transition:all .2s}
+.nav-cta:hover{background:#00ffb3;box-shadow:0 0 20px rgba(0,245,168,.3)}
+.toast{position:fixed;bottom:20px;right:20px;z-index:9999;background:rgba(0,0,0,.9);border:.5px solid rgba(0,245,168,.25);color:var(--t2);font-family:var(--mono);font-size:12px;padding:10px 16px;border-radius:10px;transform:translateY(60px);opacity:0;transition:all .3s;backdrop-filter:blur(20px)}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* PAGES */
+.page{display:none;position:relative;z-index:10;min-height:100vh;padding-top:80px}
+.page.active{display:block}
+
+/* SHARED LAYOUT */
+.container{max-width:960px;margin:0 auto;padding:0 24px}
+.section{padding:80px 0}
+.section-sm{padding:50px 0}
+
+/* TYPOGRAPHY */
+.hero-h{font-size:clamp(42px,7vw,88px);font-weight:700;line-height:1.03;letter-spacing:-2.5px;color:var(--w);margin-bottom:20px}
+.hero-h .gr{background:linear-gradient(135deg,#00F5A8,#00C8FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-h .cy{color:var(--cyan)}
+.hero-h .rd{color:var(--red)}
+.page-title{font-size:clamp(28px,4vw,46px);font-weight:700;color:var(--w);letter-spacing:-1.5px;margin-bottom:12px}
+.page-title .gr{background:linear-gradient(135deg,#00F5A8,#00C8FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.eyebrow{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:14px}
+.eyebrow.g{color:rgba(0,245,168,.6)}
+.eyebrow.b{color:rgba(0,200,255,.6)}
+.eyebrow.r{color:rgba(255,59,48,.6)}
+.eyebrow.p{color:rgba(191,90,242,.6)}
+.lead{font-size:clamp(16px,2vw,20px);color:var(--t3);line-height:1.7;max-width:580px;margin-bottom:36px}
+.lead strong{color:var(--t2);font-weight:500}
+.body-text{font-size:16px;color:var(--t3);line-height:1.75}
+.body-text strong{color:var(--t2);font-weight:500}
+.sep{height:.5px;background:linear-gradient(90deg,transparent,var(--border2),transparent);margin:60px 0}
+
+/* CARDS */
+.card{background:var(--glass);border:.5px solid var(--border2);border-radius:16px;padding:28px;position:relative;overflow:hidden;transition:background .2s,border-color .2s}
+.card:hover{background:var(--glass2);border-color:var(--border3)}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:.5px;background:linear-gradient(90deg,transparent,var(--ac,rgba(0,245,168,.35)),transparent)}
+.card-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.card-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+
+/* BUTTONS */
+.btn-primary{display:inline-flex;align-items:center;gap:8px;background:var(--green);color:#000;font-family:var(--font);font-size:15px;font-weight:700;padding:14px 32px;border-radius:12px;text-decoration:none;cursor:none;border:none;transition:all .2s;letter-spacing:-.2px}
+.btn-primary:hover{background:#00ffb3;box-shadow:0 0 24px rgba(0,245,168,.3)}
+.btn-outline{display:inline-flex;align-items:center;gap:8px;background:transparent;color:var(--t2);font-family:var(--font);font-size:14px;font-weight:500;padding:12px 28px;border-radius:12px;border:.5px solid var(--border2);text-decoration:none;cursor:none;transition:all .2s}
+.btn-outline:hover{border-color:var(--border3);color:var(--w);background:var(--glass)}
+.btn-row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:32px}
+
+/* PILLS */
+.pill{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;padding:5px 12px;border-radius:20px;border:.5px solid rgba(0,245,168,.15);color:rgba(0,245,168,.65);background:rgba(0,245,168,.04)}
+.pill.blue{border-color:rgba(0,200,255,.15);color:rgba(0,200,255,.65);background:rgba(0,200,255,.04)}
+.pill.red{border-color:rgba(255,59,48,.15);color:rgba(255,59,48,.65);background:rgba(255,59,48,.04)}
+.pill-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:32px}
+
+/* STAT STRIP */
+.stat-strip{display:flex;gap:12px;margin:40px 0}
+.stat-box{flex:1;background:var(--glass);border:.5px solid var(--border2);border-radius:14px;padding:22px 16px;text-align:center;position:relative;overflow:hidden}
+.stat-box::before{content:'';position:absolute;top:0;left:0;right:0;height:.5px;background:linear-gradient(90deg,transparent,var(--sc,rgba(0,245,168,.4)),transparent)}
+.stat-n{font-size:32px;font-weight:700;letter-spacing:-1px;margin-bottom:4px}
+.stat-l{font-family:var(--mono);font-size:9px;color:var(--t4);text-transform:uppercase;letter-spacing:.8px;line-height:1.5}
+
+/* FORM */
+.form-group{margin-bottom:18px}
+.form-label{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--t3);letter-spacing:1px;text-transform:uppercase;margin-bottom:7px;display:block}
+.form-input,.form-textarea{width:100%;background:var(--glass);border:.5px solid var(--border2);border-radius:10px;padding:13px 16px;font-family:var(--mono);font-size:13px;color:var(--w);outline:none;transition:border-color .2s;resize:vertical}
+.form-input::placeholder,.form-textarea::placeholder{color:var(--t4)}
+.form-input:focus,.form-textarea:focus{border-color:rgba(0,245,168,.3);box-shadow:0 0 0 1px rgba(0,245,168,.15)}
+.form-textarea{min-height:120px}
+.form-submit{background:var(--green);color:#000;font-family:var(--font);font-size:14px;font-weight:700;padding:13px 28px;border-radius:10px;border:none;cursor:none;width:100%;transition:all .2s}
+.form-submit:hover{background:#00ffb3;box-shadow:0 0 20px rgba(0,245,168,.3)}
+
+/* CHECK LIST */
+.check-item{display:flex;gap:12px;padding:14px 0;border-bottom:.5px solid var(--border)}
+.check-item:last-child{border-bottom:none}
+.check-icon{color:var(--green);font-weight:700;flex-shrink:0;margin-top:1px;font-family:var(--mono)}
+.check-text{font-size:15px;color:var(--t2)}
+.check-text span{display:block;font-size:12px;color:var(--t4);font-family:var(--mono);margin-top:2px}
+
+/* FAQ */
+.faq-item{border-bottom:.5px solid var(--border);overflow:hidden}
+.faq-q{display:flex;justify-content:space-between;align-items:center;padding:18px 0;font-size:16px;font-weight:600;color:var(--w);cursor:none;user-select:none;gap:16px}
+.faq-q:hover{color:var(--green)}
+.faq-icon{font-size:18px;flex-shrink:0;transition:transform .25s;color:var(--t4)}
+.faq-item.open .faq-icon{transform:rotate(45deg);color:var(--green)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .35s ease,padding .25s}
+.faq-item.open .faq-a{max-height:300px;padding-bottom:16px}
+.faq-a p{font-size:15px;color:var(--t3);line-height:1.7}
+.faq-a p strong{color:var(--t2);font-weight:500}
+
+/* BLOG */
+.blog-card{display:flex;flex-direction:column;gap:12px;background:var(--glass);border:.5px solid var(--border2);border-radius:16px;padding:28px;cursor:none;transition:all .2s;text-decoration:none}
+.blog-card:hover{background:var(--glass2);border-color:var(--border3);transform:translateY(-2px)}
+.blog-tag{font-family:var(--mono);font-size:9px;font-weight:700;padding:3px 10px;border-radius:5px;background:rgba(0,245,168,.08);border:.5px solid rgba(0,245,168,.15);color:rgba(0,245,168,.6);align-self:flex-start}
+.blog-title{font-size:18px;font-weight:700;color:var(--w);line-height:1.3}
+.blog-excerpt{font-size:13px;color:var(--t3);line-height:1.6;font-family:var(--mono)}
+.blog-meta{font-family:var(--mono);font-size:10px;color:var(--t4)}
+
+/* TESTIMONIALS */
+.testimonial{background:var(--glass);border:.5px solid var(--border2);border-radius:16px;padding:28px;position:relative;overflow:hidden}
+.testimonial::before{content:'';position:absolute;top:0;left:0;right:0;height:.5px;background:linear-gradient(90deg,transparent,rgba(0,245,168,.3),transparent)}
+.test-quote{font-size:15px;font-style:italic;color:var(--t2);line-height:1.7;margin-bottom:16px}
+.test-quote strong{color:var(--green);font-style:normal}
+.test-author{font-family:var(--mono);font-size:11px;color:var(--t4)}
+.test-platform{display:inline-block;margin-top:8px;font-family:var(--mono);font-size:9px;color:rgba(0,200,255,.6);background:rgba(0,200,255,.06);border:.5px solid rgba(0,200,255,.14);padding:2px 8px;border-radius:4px}
+
+/* PRICING */
+.price-card{background:var(--glass);border:.5px solid var(--border2);border-radius:18px;padding:30px;position:relative;overflow:hidden;transition:all .2s}
+.price-card.featured{border-color:rgba(0,245,168,.25);background:rgba(0,245,168,.04)}
+.price-card::before{content:'';position:absolute;top:0;left:0;right:0;height:.5px;background:linear-gradient(90deg,transparent,var(--pc,rgba(255,255,255,.15)),transparent)}
+.price-card.featured::before{background:linear-gradient(90deg,transparent,#00F5A8,#00C8FF,transparent)}
+.price-tier{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px}
+.price-amount{font-size:44px;font-weight:700;color:var(--w);letter-spacing:-2px;margin-bottom:4px;line-height:1}
+.price-period{font-family:var(--mono);font-size:11px;color:var(--t4);margin-bottom:20px}
+.price-features{display:flex;flex-direction:column;gap:9px;margin-bottom:24px}
+.pf{display:flex;gap:9px;font-size:13px;color:var(--t3)}
+.pf::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0;font-family:var(--mono)}
+.price-cta{display:block;text-align:center;padding:12px;border-radius:10px;font-family:var(--font);font-size:14px;font-weight:700;text-decoration:none;cursor:none;transition:all .2s;margin-top:auto}
+.price-cta.primary{background:var(--green);color:#000}
+.price-cta.primary:hover{background:#00ffb3;box-shadow:0 0 20px rgba(0,245,168,.3)}
+.price-cta.outline{background:transparent;color:var(--t2);border:.5px solid var(--border2)}
+.price-cta.outline:hover{border-color:var(--border3);color:var(--w)}
+
+/* TEAM / FOUNDER */
+.founder-card{display:flex;gap:28px;align-items:flex-start;background:var(--glass);border:.5px solid var(--border2);border-radius:18px;padding:32px;position:relative;overflow:hidden}
+.founder-card::before{content:'';position:absolute;top:0;left:0;right:0;height:.5px;background:linear-gradient(90deg,transparent,rgba(0,245,168,.3),transparent)}
+.founder-avatar{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,rgba(0,245,168,.3),rgba(0,200,255,.2));border:2px solid rgba(0,245,168,.2);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
+.founder-name{font-size:20px;font-weight:700;color:var(--w);margin-bottom:4px}
+.founder-title{font-family:var(--mono);font-size:11px;color:rgba(0,245,168,.6);margin-bottom:12px}
+.founder-bio{font-size:14px;color:var(--t3);line-height:1.7}
+
+/* VALUE ITEM */
+.value-item{display:flex;gap:16px;padding:20px;background:var(--glass);border:.5px solid var(--border2);border-radius:14px}
+.value-icon{font-size:24px;flex-shrink:0}
+.value-title{font-size:15px;font-weight:700;color:var(--w);margin-bottom:4px}
+.value-desc{font-size:13px;color:var(--t3);line-height:1.6;font-family:var(--mono)}
+
+/* CONTACT GRID */
+.contact-method{display:flex;gap:16px;align-items:flex-start;padding:20px;background:var(--glass);border:.5px solid var(--border2);border-radius:14px}
+.cm-icon{width:40px;height:40px;border-radius:10px;background:rgba(0,245,168,.08);border:.5px solid rgba(0,245,168,.15);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.cm-label{font-family:var(--mono);font-size:10px;color:var(--t4);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.cm-value{font-size:14px;color:var(--t2);font-weight:500}
+.cm-value a{color:var(--green);text-decoration:none}
+
+/* LEGAL */
+.legal-section{margin-bottom:40px}
+.legal-h{font-size:18px;font-weight:700;color:var(--w);margin-bottom:10px}
+.legal-p{font-size:14px;color:var(--t3);line-height:1.75;margin-bottom:10px;font-family:var(--mono)}
+
+/* SITEMAP */
+.sitemap-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.sm-section{}
+.sm-section-title{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--green);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px}
+.sm-link{display:block;font-size:13px;color:var(--t3);text-decoration:none;padding:5px 0;border-bottom:.5px solid var(--border);cursor:none;transition:color .15s}
+.sm-link:hover{color:var(--green)}
+.sm-link:last-child{border-bottom:none}
+
+/* RESPONSIVE */
+@media(max-width:700px){
+  .card-grid-2,.card-grid-3{grid-template-columns:1fr}
+  .stat-strip{flex-direction:column}
+  .founder-card{flex-direction:column}
+  .sitemap-grid{grid-template-columns:1fr 1fr}
+  .nav-links{display:none}
+  .hero-h{letter-spacing:-1.5px}
+}
+</style>
+</head>
+<body>
+
+<!-- CURSOR -->
+<div class="cursor" id="cur"></div>
+<div class="cursor-ring" id="ring"></div>
+<div class="toast" id="toast"></div>
+
+<!-- BACKGROUND -->
+<div class="bg-glow" style="width:700px;height:700px;top:-250px;left:-200px;background:radial-gradient(circle,rgba(0,245,168,.09) 0%,transparent 65%)"></div>
+<div class="bg-glow" style="width:600px;height:600px;bottom:-200px;right:-150px;background:radial-gradient(circle,rgba(0,200,255,.07) 0%,transparent 65%)"></div>
+<div class="bg-grid"></div>
+<div class="bg-vignette"></div>
+
+<!-- NAV -->
+<div class="nav">
+  <div class="nav-inner">
+    <a class="nav-logo" onclick="show('home')">
+      <div class="nav-logo-sq">🛡</div>Vibesecur
+    </a>
+    <div class="nav-links">
+      <button class="nav-link" onclick="show('home')">Home</button>
+      <button class="nav-link" onclick="show('about')">About</button>
+      <button class="nav-link" onclick="show('services')">Services</button>
+      <button class="nav-link" onclick="show('pricing')">Pricing</button>
+      <button class="nav-link" onclick="show('blog')">Blog</button>
+      <button class="nav-link" onclick="show('faq')">FAQ</button>
+      <button class="nav-link" onclick="show('testimonials')">Reviews</button>
+      <button class="nav-link" onclick="show('contact')">Contact</button>
+    </div>
+    <a class="nav-cta" onclick="show('contact')">Join Waitlist →</a>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE 1 — HOME
+══════════════════════════════════════════ -->
+<div class="page active" id="page-home">
+  <div class="container section" style="text-align:center">
+    <div class="pill-row" style="justify-content:center;margin-bottom:24px">
+      <span class="pill">🛡 Launching Soon</span>
+      <span class="pill blue">⚡ 60-second scans</span>
+      <span class="pill">🔒 Zero data stored</span>
+    </div>
+    <h1 class="hero-h">
+      Scan your app <span class="gr">before</span><br>
+      hackers do it <span class="cy">for you.</span>
+    </h1>
+    <p class="lead" style="margin:0 auto 36px">
+      <strong>Lovable, Cursor, Bolt and v0</strong> leave security holes in every app they build.
+      Vibesecur catches them — exposed API keys, missing Supabase RLS, broken auth —
+      in 60 seconds. Free. No account. Code never leaves your browser.
+    </p>
+    <div class="btn-row" style="justify-content:center">
+      <a class="btn-primary" onclick="show('contact')">Join the Waitlist →</a>
+      <a class="btn-outline" onclick="show('services')">See How It Works</a>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="container">
+    <div class="stat-strip">
+      <div class="stat-box" style="--sc:rgba(255,59,48,.5)"><div class="stat-n" style="color:#FF3B30">45%</div><div class="stat-l">of AI-generated code has a critical flaw · Veracode 2026</div></div>
+      <div class="stat-box" style="--sc:rgba(0,245,168,.5)"><div class="stat-n" style="color:#00F5A8">170</div><div class="stat-l">Lovable apps exposed by one missing Supabase checkbox · CVE-2025-48757</div></div>
+      <div class="stat-box" style="--sc:rgba(0,200,255,.5)"><div class="stat-n" style="color:#00C8FF">60s</div><div class="stat-l">to scan your entire app — free, no signup</div></div>
+      <div class="stat-box" style="--sc:rgba(255,159,10,.5)"><div class="stat-n" style="color:#FF9F0A">$0</div><div class="stat-l">to start — free forever for 10 scans/month</div></div>
+    </div>
+    <div class="sep"></div>
+
+    <!-- What it catches -->
+    <div style="margin-bottom:24px">
+      <div class="eyebrow g">What Vibesecur Catches</div>
+      <h2 class="page-title">The bugs your AI <span class="gr">left behind.</span></h2>
+    </div>
+    <div class="card-grid-2" style="margin-bottom:48px">
+      <div class="card" style="--ac:rgba(0,245,168,.4)"><span style="font-size:22px;margin-bottom:12px;display:block">🔑</span><div style="font-size:15px;font-weight:700;color:var(--w);margin-bottom:6px">Hardcoded API Keys</div><div class="body-text">Stripe, OpenAI, Supabase service_role, AWS AKIA — anywhere in your code, including minified bundles.</div></div>
+      <div class="card" style="--ac:rgba(0,200,255,.4)"><span style="font-size:22px;margin-bottom:12px;display:block">🛡</span><div style="font-size:15px;font-weight:700;color:var(--w);margin-bottom:6px">Missing Supabase RLS</div><div class="body-text">The exact flaw behind CVE-2025-48757. Checks every table and every policy — not just whether the toggle is on.</div></div>
+      <div class="card" style="--ac:rgba(255,159,10,.4)"><span style="font-size:22px;margin-bottom:12px;display:block">🔐</span><div style="font-size:15px;font-weight:700;color:var(--w);margin-bottom:6px">Broken Authentication</div><div class="body-text">MD5 passwords, no JWT expiry, wildcard CORS, no rate limiting — the 4 patterns AI consistently gets wrong.</div></div>
+      <div class="card" style="--ac:rgba(255,59,48,.4)"><span style="font-size:22px;margin-bottom:12px;display:block">💳</span><div style="font-size:15px;font-weight:700;color:var(--w);margin-bottom:6px">Payment Bypass</div><div class="body-text">Paywall checks in React state, webhooks without Stripe signature verification — the $87,500 mistake.</div></div>
+    </div>
+
+    <!-- CTA Banner -->
+    <div class="card" style="--ac:rgba(0,245,168,.5);text-align:center;padding:48px;background:rgba(0,245,168,.04);border-color:rgba(0,245,168,.2)">
+      <h2 style="font-size:28px;font-weight:700;color:var(--w);margin-bottom:12px">You built it in a weekend.<br><span style="background:linear-gradient(135deg,#00F5A8,#00C8FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Secure it in 60 seconds.</span></h2>
+      <p style="font-size:16px;color:var(--t3);margin-bottom:28px">First 500 waitlist users get 3 months of Solo free. No card needed.</p>
+      <a class="btn-primary" onclick="show('contact')" style="display:inline-flex">Join the Waitlist →</a>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--t4);margin-top:14px">No spam · One email at launch · Code never stored</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE 2 — ABOUT
+══════════════════════════════════════════ -->
+<div class="page" id="page-about">
+  <div class="container section">
+    <div class="eyebrow g">About Us</div>
+    <h1 class="page-title">Built by a founder<br>who <span class="gr">scanned their own app.</span></h1>
+    <p class="lead">We found 4 critical issues before launch. That's why Vibesecur exists.</p>
+    <div class="sep" style="margin:40px 0"></div>
+
+    <!-- Story -->
+    <div class="card-grid-2" style="margin-bottom:48px;align-items:start">
+      <div>
+        <div class="eyebrow g" style="margin-bottom:16px">Our Story</div>
+        <div class="body-text">
+          <p style="margin-bottom:14px">It started with a Lovable app, a Friday launch, and a very bad Monday morning. Like thousands of founders, we used AI tools to build fast — and shipped without realizing what was left behind.</p>
+          <p style="margin-bottom:14px">When CVE-2025-48757 dropped and exposed 170 Lovable apps in a single security disclosure, it confirmed what we already suspected: <strong>AI tools are built to make code work, not to make it safe.</strong></p>
+          <p>So we built the scanner we wished existed when we launched. Browser-only. No upload. No account. Just the truth about your code in 60 seconds.</p>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="card" style="--ac:rgba(255,59,48,.4);background:rgba(255,59,48,.04);border-color:rgba(255,59,48,.12)">
+          <div style="font-family:var(--mono);font-size:9px;font-weight:700;color:rgba(255,80,80,.6);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">⚠ The Incident That Started It</div>
+          <div style="font-size:15px;font-weight:700;font-style:italic;color:var(--w);line-height:1.4;margin-bottom:8px">"guys, i'm under attack — people are bypassing my paywall and maxing out my API keys."</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--t4)">— Leo, building in public · 3 days after launch</div>
+        </div>
+        <div class="card" style="--ac:rgba(0,245,168,.4)">
+          <div class="eyebrow g" style="margin-bottom:10px">Vietnam TechFest 2025</div>
+          <div class="body-text">Recognized as a finalist among the top 20 startups in Southeast Asia.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Founder -->
+    <div class="eyebrow g" style="margin-bottom:20px">The Founder</div>
+    <div class="founder-card" style="margin-bottom:48px">
+      <div class="founder-avatar">👨‍💻</div>
+      <div>
+        <div class="founder-name">Venu</div>
+        <div class="founder-title">Founder & CEO · Vibesecur</div>
+        <div class="founder-bio">Builder, security advocate, and the person who scanned their own Lovable app and found 4 critical issues 20 minutes before launch. I built Vibesecur so no founder has to live through the 3am "guys, i'm under attack" moment. Based in India, building for the world.</div>
+        <div style="display:flex;gap:8px;margin-top:14px">
+          <span class="pill">India · Global</span>
+          <span class="pill blue">Vietnam TechFest 2025</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mission & Values -->
+    <div class="eyebrow g" style="margin-bottom:20px">Mission & Values</div>
+    <p style="font-size:20px;font-weight:600;color:var(--w);margin-bottom:32px;line-height:1.4;max-width:640px">"Every founder deserves to ship with confidence — not regret."</p>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="value-item"><div class="value-icon">🔒</div><div><div class="value-title">Privacy first, always</div><div class="value-desc">Your code never leaves your browser. We can't leak what we never see.</div></div></div>
+      <div class="value-item"><div class="value-icon">🧠</div><div><div class="value-title">Plain English over jargon</div><div class="value-desc">Security shouldn't require a CISSP. Every finding has a fix you can paste.</div></div></div>
+      <div class="value-item"><div class="value-icon">⚡</div><div><div class="value-title">Speed over ceremony</div><div class="value-desc">60 seconds. No demo call, no setup, no CLI. Results before your next coffee.</div></div></div>
+      <div class="value-item"><div class="value-icon">🌍</div><div><div class="value-title">Built for every builder</div><div class="value-desc">From solo founders in India to agencies shipping 50 apps a month globally.</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE 3 — SERVICES
+══════════════════════════════════════════ -->
+<div class="page" id="page-services">
+  <div class="container section">
+    <div class="eyebrow g">How It Works</div>
+    <h1 class="page-title">Security that works <span class="gr">as you build</span> —<br>not after you've shipped.</h1>
+    <p class="lead">Three ways to use Vibesecur. All privacy-preserving. All built for vibe coders.</p>
+
+    <!-- 3 delivery methods -->
+    <div class="card-grid-3" style="margin-bottom:48px">
+      <div class="card" style="--ac:rgba(0,245,168,.4)">
+        <span style="font-size:28px;margin-bottom:14px;display:block">⚡</span>
+        <div style="font-family:var(--mono);font-size:9px;font-weight:700;color:rgba(0,245,168,.6);letter-spacing:2px;margin-bottom:10px">PRIMARY</div>
+        <div style="font-size:17px;font-weight:700;color:var(--w);margin-bottom:8px">MCP Server</div>
+        <div class="body-text">Install once in Cursor or Windsurf. Every file your AI writes gets scanned automatically — before you even see the code.</div>
+        <div style="margin-top:14px;font-family:var(--mono);font-size:10px;color:rgba(0,245,168,.5)">Cursor · Windsurf · Claude Dev · Continue.dev</div>
+      </div>
+      <div class="card" style="--ac:rgba(0,200,255,.4)">
+        <span style="font-size:28px;margin-bottom:14px;display:block">🌐</span>
+        <div style="font-family:var(--mono);font-size:9px;font-weight:700;color:rgba(0,200,255,.6);letter-spacing:2px;margin-bottom:10px">UNIVERSAL</div>
+        <div style="font-size:17px;font-weight:700;color:var(--w);margin-bottom:8px">Web Scanner</div>
+        <div class="body-text">Paste any code. 60+ checks run entirely in your browser. Results in 60 seconds. No account. No upload. Code never leaves the tab.</div>
+        <div style="margin-top:14px;font-family:var(--mono);font-size:10px;color:rgba(0,200,255,.5)">All platforms · No setup</div>
+      </div>
+      <div class="card" style="--ac:rgba(191,90,242,.4)">
+        <span style="font-size:28px;margin-bottom:14px;display:block">🔌</span>
+        <div style="font-family:var(--mono);font-size:9px;font-weight:700;color:rgba(191,90,242,.6);letter-spacing:2px;margin-bottom:10px">COMING SOON</div>
+        <div style="font-size:17px;font-weight:700;color:var(--w);margin-bottom:8px">Chrome Extension</div>
+        <div class="body-text">One-click security scan of any live vibe-coded app directly from the URL bar. Scan someone else's Lovable app with one click.</div>
+        <div style="margin-top:14px;font-family:var(--mono);font-size:10px;color:rgba(191,90,242,.5)">Launching Q3 2026</div>
+      </div>
+    </div>
+
+    <!-- What gets checked -->
+    <div class="sep"></div>
+    <div class="eyebrow g" style="margin-bottom:20px">60+ Security Checks</div>
+    <div class="card-grid-2" style="margin-bottom:48px">
+      <div>
+        <div style="font-size:15px;font-weight:700;color:var(--w);margin-bottom:14px">JavaScript / TypeScript</div>
+        <div class="check-item"><div class="check-icon">✓</div><div class="check-text">Hardcoded API keys (Stripe, OpenAI, Supabase, AWS)<span>S001–S007</span></div></div>
+        <div class="check-item"><div class="check-icon">✓</div><div class="check-text">Missing Supabase RLS policies<span>RLS1–RLS2 · CVE-2025-48757 class</span></div></div>
+        <div class="check-item"><div class="check-icon">✓</div><div class="check-text">MD5/SHA1 password hashing<span>A001–A002</span></div></div>
+        <div class="check-item"><div class="check-icon">✓</div><div class="check-text">JWT without expiry<span>A003</span></div></div>
+        <div class="check-item"><div class="check-icon">✓</div><div class="check-text">eval() usage, SQL injection, wildcard CORS<span>A004–A006</span></div></div>
+        <div class="check-item"><div class="check-icon">✓</div><div class="check-text">Stack traces exposed, debug mode on, log leaks<span>E001–E005</span></div></div>
+      </div>
+      <div>
+        <div style="font-size:15px;font-weight:700;color:var(--w);margin-bottom:14px">Python</div>
+        <div class="check-item"><div class="check-icon">✓</div><div class="check-text">eval(), exec(), pickle.loads()<span>P001–P002</span></div></div>
+        <div class="check-item"><div class="check-icon">✓</div><div class="check-text">SQL injection via f-strings or %<span>P003</span></div></div>
+        <div class="check-item"><div class="check-icon">✓</div><div class="check-text">Hardcoded passwords and API keys<span>P004</span></div></div>
+        <div class="check-item"><div class="check-icon">✓</div><div class="check-text">subprocess with shell=True<span>P005</span></div></div>
+        <div class="check-item"><div class="check-icon">✓</div><div class="check-text">hashlib.md5/sha1 for passwords<span>P006</span></div></div>
+        <div class="check-item"><div class="check-icon">✓</div><div class="check-text">DEBUG=True, open redirects, SSRF risk<span>P007–P009</span></div></div>
+      </div>
+    </div>
+
+    <!-- Supported platforms -->
+    <div class="eyebrow g" style="margin-bottom:16px">Works on all 23 vibe coding platforms</div>
+    <div class="pill-row">
+      <span class="pill">Cursor</span><span class="pill">Windsurf</span><span class="pill">Lovable</span><span class="pill">Bolt.new</span><span class="pill">v0 by Vercel</span><span class="pill">Replit</span><span class="pill">Google AI Studio</span><span class="pill">Emergent</span><span class="pill">Claude Dev</span><span class="pill">Continue.dev</span><span class="pill blue">Base44</span><span class="pill blue">Tempo Labs</span><span class="pill blue">+11 more</span>
+    </div>
+
+    <!-- IP Passport -->
+    <div class="sep"></div>
+    <div class="card" style="--ac:rgba(191,90,242,.4);background:rgba(191,90,242,.04);border-color:rgba(191,90,242,.2)">
+      <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap">
+        <div style="flex:1;min-width:240px">
+          <div class="eyebrow p" style="margin-bottom:12px">IP Passport</div>
+          <div style="font-size:20px;font-weight:700;color:var(--w);margin-bottom:10px">Prove you shipped secure. For the investor call.</div>
+          <div class="body-text">Every clean scan generates an IP Passport — a cryptographically timestamped certificate of your code's security posture. Pin it to your README. Attach it to your data room. Hand it to the security engineer in your first enterprise deal.</div>
+        </div>
+        <div style="background:rgba(0,0,0,.4);border:.5px solid rgba(191,90,242,.2);border-radius:12px;padding:20px;min-width:220px;font-family:var(--mono)">
+          <div style="font-size:9px;color:rgba(191,90,242,.5);letter-spacing:2px;margin-bottom:10px">IP PASSPORT · VIBESECUR</div>
+          <div style="font-size:13px;color:var(--w);margin-bottom:4px">my-app.vibesecur.dev</div>
+          <div style="font-size:11px;color:var(--t4);margin-bottom:12px">Scanned: Apr 24, 2026 · 14:32 UTC</div>
+          <div style="font-size:20px;font-weight:700;color:#00F5A8;margin-bottom:4px">Score: 98 / A</div>
+          <div style="font-size:11px;color:rgba(0,245,168,.5)">0 critical · 0 high · 1 medium</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE 4 — PRICING
+══════════════════════════════════════════ -->
+<div class="page" id="page-pricing">
+  <div class="container section">
+    <div class="eyebrow g">Pricing</div>
+    <h1 class="page-title">Priced for founders,<br>not <span class="gr">security teams.</span></h1>
+    <p class="lead">Every plan scans entirely in your browser. Every plan stores zero data. Cancel anytime.</p>
+
+    <div class="card-grid-3" style="margin-bottom:24px;align-items:start">
+      <div class="price-card">
+        <div class="price-tier" style="color:var(--t3)">Free</div>
+        <div class="price-amount">$0</div>
+        <div class="price-period">forever · no card needed</div>
+        <div class="price-features">
+          <div class="pf">10 web scans per month</div>
+          <div class="pf">20 critical checks</div>
+          <div class="pf">Plain-English findings</div>
+          <div class="pf">Browser-only · zero data</div>
+        </div>
+        <a class="price-cta outline" onclick="show('contact')">Join Waitlist</a>
+      </div>
+
+      <div class="price-card featured" style="--pc:linear-gradient(90deg,transparent,#00F5A8,#00C8FF,transparent)">
+        <div style="position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--green);color:#000;font-family:var(--mono);font-size:9px;font-weight:700;padding:3px 12px;border-radius:0 0 8px 8px;white-space:nowrap">RECOMMENDED</div>
+        <div class="price-tier" style="color:var(--green);margin-top:10px">Solo</div>
+        <div class="price-amount" style="color:var(--green)">$9</div>
+        <div class="price-period">/ month · or $84/year</div>
+        <div class="price-features">
+          <div class="pf">Unlimited web scans</div>
+          <div class="pf">All 60+ checks</div>
+          <div class="pf">MCP server for Cursor & Windsurf</div>
+          <div class="pf">Monthly IP Passport</div>
+          <div class="pf">Email support · 24hr response</div>
+        </div>
+        <a class="price-cta primary" onclick="show('contact')">Get Early Access →</a>
+      </div>
+
+      <div class="price-card">
+        <div class="price-tier" style="color:var(--cyan)">Pro</div>
+        <div class="price-amount">$29</div>
+        <div class="price-period">/ month · or $276/year</div>
+        <div class="price-features">
+          <div class="pf">Everything in Solo</div>
+          <div class="pf">Up to 3 team seats</div>
+          <div class="pf">Unlimited IP Passports</div>
+          <div class="pf">GitHub Action CI/CD</div>
+          <div class="pf">Priority support · 4hr response</div>
+        </div>
+        <a class="price-cta outline" onclick="show('contact')">Join Waitlist</a>
+      </div>
+    </div>
+
+    <!-- Trust note -->
+    <div style="text-align:center;font-family:var(--mono);font-size:11px;color:var(--t4);margin-bottom:48px">
+      All plans: 0 bytes of code stored · works on all 23 platforms · 60-second scans · copy-paste fix prompts
+    </div>
+
+    <!-- Early access perks -->
+    <div class="sep"></div>
+    <div class="eyebrow g" style="margin-bottom:20px">Early Access Benefits — First 500 only</div>
+    <div class="card-grid-2">
+      <div class="check-item"><div class="check-icon">✓</div><div class="check-text"><strong>Solo plan free for 3 months</strong><span>Unlimited scans + all 15 MCP tools + IP Passport ($27 value)</span></div></div>
+      <div class="check-item"><div class="check-icon">✓</div><div class="check-text"><strong>$9/mo locked forever</strong><span>Pricing increases post-launch. Waitlist users keep the founding rate.</span></div></div>
+      <div class="check-item"><div class="check-icon">✓</div><div class="check-text"><strong>MCP Server 2 weeks early</strong><span>Scan as Cursor writes. Before public launch.</span></div></div>
+      <div class="check-item"><div class="check-icon">✓</div><div class="check-text"><strong>Free IP Passport on day one</strong><span>Timestamped security cert for your investor data room.</span></div></div>
+      <div class="check-item"><div class="check-icon">✓</div><div class="check-text"><strong>Direct line to founders</strong><span>Private Slack. Your feedback ships first.</span></div></div>
+      <div class="check-item"><div class="check-icon">✓</div><div class="check-text"><strong>Founding member badge</strong><span>Embeddable badge for GitHub, README, or landing page.</span></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE 5 — BLOG
+══════════════════════════════════════════ -->
+<div class="page" id="page-blog">
+  <div class="container section">
+    <div class="eyebrow g">Blog & Resources</div>
+    <h1 class="page-title">Security guides for <span class="gr">vibe coders.</span></h1>
+    <p class="lead">No jargon. No enterprise fluff. Just what every AI app builder needs to know before shipping.</p>
+
+    <div class="card-grid-2" style="margin-bottom:48px">
+      <a class="blog-card" href="#">
+        <div class="blog-tag">Incident Report</div>
+        <div class="blog-title">CVE-2025-48757: How One Checkbox Exposed 170 Lovable Apps</div>
+        <div class="blog-excerpt">The Supabase RLS vulnerability that put vibe-code security on the mainstream agenda — and what you need to check right now.</div>
+        <div class="blog-meta">May 2025 · 5 min read</div>
+      </a>
+      <a class="blog-card" href="#">
+        <div class="blog-tag">Guide</div>
+        <div class="blog-title">Supabase RLS: The Complete Guide for Non-Developers</div>
+        <div class="blog-excerpt">Row Level Security isn't just a toggle. Here's what "enabled but no policies" actually means — and how to fix it in Lovable, Cursor, and Bolt.</div>
+        <div class="blog-meta">Apr 2026 · 8 min read</div>
+      </a>
+      <a class="blog-card" href="#">
+        <div class="blog-tag">Deep Dive</div>
+        <div class="blog-title">Why AI Can't Audit Its Own Code (The NetSPI Study)</div>
+        <div class="blog-excerpt">NetSPI vibe-coded an app and asked the AI to audit itself. It claimed a 378% security improvement — a number it invented. A human pentester still found critical bugs.</div>
+        <div class="blog-meta">Mar 2026 · 6 min read</div>
+      </a>
+      <a class="blog-card" href="#">
+        <div class="blog-tag">Checklist</div>
+        <div class="blog-title">10 Things to Check Before You Ship Your Vibe-Coded App</div>
+        <div class="blog-excerpt">The minimum security checklist every AI-assisted builder needs before going live — with copy-paste fixes for Lovable, Cursor, Bolt, and v0.</div>
+        <div class="blog-meta">Apr 2026 · 4 min read</div>
+      </a>
+      <a class="blog-card" href="#">
+        <div class="blog-tag">Tutorial</div>
+        <div class="blog-title">How to Set Up the Vibesecur MCP Server in Cursor</div>
+        <div class="blog-excerpt">Step-by-step: install the MCP server, configure it in your mcp.json, and start scanning files as Cursor writes them — in under 5 minutes.</div>
+        <div class="blog-meta">Apr 2026 · 3 min read</div>
+      </a>
+      <a class="blog-card" href="#">
+        <div class="blog-tag">Incident</div>
+        <div class="blog-title">The Moltbook Breach: 1.5M API Tokens Leaked in 3 Days</div>
+        <div class="blog-excerpt">How a vibe-coded social network became the largest single AI-app security incident of 2026 — and what every founder can learn from it.</div>
+        <div class="blog-meta">Feb 2026 · 7 min read</div>
+      </a>
+    </div>
+
+    <div style="text-align:center">
+      <div class="card" style="display:inline-block;padding:28px 40px;background:rgba(0,245,168,.04);border-color:rgba(0,245,168,.2)">
+        <div style="font-size:16px;font-weight:600;color:var(--w);margin-bottom:8px">Get security tips in your inbox</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--t4);margin-bottom:16px">One email a week. No spam. Unsubscribe anytime.</div>
+        <div style="display:flex;gap:8px;max-width:380px">
+          <input class="form-input" type="email" placeholder="your@email.com" style="flex:1">
+          <button class="btn-primary" style="white-space:nowrap;padding:13px 20px" onclick="showToast('Subscribed!')">Subscribe →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE 6 — FAQ
+══════════════════════════════════════════ -->
+<div class="page" id="page-faq">
+  <div class="container section" style="max-width:720px">
+    <div class="eyebrow g">FAQ</div>
+    <h1 class="page-title">Common <span class="gr">questions.</span></h1>
+    <p class="lead">Everything you need to know before scanning your first app.</p>
+
+    <div id="faq-list">
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Is my code actually private?<span class="faq-icon">+</span></div>
+        <div class="faq-a"><p>Yes — completely. The web scanner runs entirely in your browser using WebAssembly. No server round-trip. The MCP server runs on your machine. We store nothing, log nothing, have nothing to leak. <strong>You don't have to trust us — you can read the client source on GitHub.</strong></p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">What's Supabase RLS and why does it matter?<span class="faq-icon">+</span></div>
+        <div class="faq-a"><p>Row Level Security is the checkbox that determines whether only the right user can read their own data — or whether anyone on the internet can read everything. <strong>Lovable, Bolt and Cursor often enable RLS but leave the policies empty</strong>, which is the same as not having it at all. Vibesecur checks every table and every policy.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Can I use Vibesecur without knowing how to code?<span class="faq-icon">+</span></div>
+        <div class="faq-a"><p>Yes — that's who we built it for. Every finding is explained in plain English with a <strong>copy-paste prompt you drop back into Lovable, Cursor or Bolt</strong> to fix it. You don't need to know what RLS, JWT, or CORS mean. You just need to paste.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Why can't I just ask ChatGPT or Cursor to review my code?<span class="faq-icon">+</span></div>
+        <div class="faq-a"><p>Because the AI has the same blind spots auditing its code that it had writing it. <strong>NetSPI ran this exact experiment — the AI claimed a 378% security improvement (a number it invented)</strong> and a human pentester still found critical bugs in all three audit rounds. Vibesecur runs deterministic checks, not another LLM prompt.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">What platforms does Vibesecur support?<span class="faq-icon">+</span></div>
+        <div class="faq-a"><p>All 23 major vibe coding platforms: Cursor, Windsurf, Lovable, Bolt.new, v0 by Vercel, Replit, Google AI Studio, Emergent, Claude Dev, Continue.dev, Base44, Tempo Labs, and 11 more. The rule set is tuned separately for each — Bolt's failure patterns differ from Lovable's.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">How does the 25-scan free limit work?<span class="faq-icon">+</span></div>
+        <div class="faq-a"><p>The free plan gives you 10 scans per month via the web scanner. The MCP server requires a Solo subscription ($9/mo) which includes unlimited scans. <strong>First 500 waitlist users get Solo free for 3 months.</strong></p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">What do I do if Vibesecur finds something critical?<span class="faq-icon">+</span></div>
+        <div class="faq-a"><p>Rotate the key or close the hole immediately — we give you the exact command or prompt for your stack. Then re-scan to confirm the fix landed. <strong>If it's a leaked production key with paid usage behind it, rotate first and investigate second.</strong></p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Is Vibesecur SOC 2 compliant?<span class="faq-icon">+</span></div>
+        <div class="faq-a"><p>Not yet — and for most of what you need, it doesn't matter, because we don't store your code. The IP Passport exists so <strong>you can answer SOC 2 questionnaires about your own app</strong> even while we're pre-certification. Honest answer beats a badge.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">How much does it cost?<span class="faq-icon">+</span></div>
+        <div class="faq-a"><p>Free forever for 10 scans/month with 20 critical checks. Solo is $9/month for unlimited scans, the MCP server, and a monthly IP Passport. Pro is $29/month for teams. <strong>First 500 waitlist users lock in the Solo price forever.</strong></p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE 7 — TESTIMONIALS
+══════════════════════════════════════════ -->
+<div class="page" id="page-testimonials">
+  <div class="container section">
+    <div class="eyebrow g">What Founders Say</div>
+    <h1 class="page-title">Founders who used to <span class="gr">lose sleep over this.</span></h1>
+    <p class="lead">Real builders. Real apps. Real peace of mind.</p>
+
+    <!-- Incident quotes (community) -->
+    <div style="margin-bottom:14px">
+      <div class="eyebrow r" style="margin-bottom:16px">What happens without Vibesecur</div>
+    </div>
+    <div class="card-grid-2" style="margin-bottom:40px">
+      <div class="testimonial" style="background:rgba(255,59,48,.04);border-color:rgba(255,59,48,.14)">
+        <div class="test-quote">"guys, i'm under attack — people are <strong>bypassing my paywall</strong> and maxing out my API keys."</div>
+        <div class="test-author">— Leo, building in public · Cursor SaaS</div>
+        <div class="test-platform">3 days after launch</div>
+      </div>
+      <div class="testimonial" style="background:rgba(255,59,48,.04);border-color:rgba(255,59,48,.14)">
+        <div class="test-quote">"I had no idea I'd just planted a time bomb. My Stripe live key was in my frontend bundle the whole time. <strong>$87,500 in fraudulent charges</strong> by Monday."</div>
+        <div class="test-author">— Anton, solo founder · Vibe-coded SaaS</div>
+        <div class="test-platform">6 days after launch</div>
+      </div>
+    </div>
+
+    <!-- Waitlist feedback -->
+    <div class="eyebrow g" style="margin-bottom:16px">From our waitlist community</div>
+    <div class="card-grid-3" style="margin-bottom:48px">
+      <div class="testimonial">
+        <div class="test-quote">"Scanned the Lovable app I launched on a Thursday. Found a <strong>Supabase RLS hole in 43 seconds</strong> and a Stripe key I didn't know was there. Fixed both before the weekend."</div>
+        <div class="test-author">— Maria R. · Founder</div>
+        <div class="test-platform">Built with Lovable</div>
+      </div>
+      <div class="testimonial">
+        <div class="test-quote">"I'm not a developer. Vibesecur told me exactly what was wrong and <strong>exactly what to paste into Cursor</strong> to fix it. That's it. That's the product."</div>
+        <div class="test-author">— Kenji T. · Founder</div>
+        <div class="test-platform">Built with Cursor + Supabase</div>
+      </div>
+      <div class="testimonial">
+        <div class="test-quote">"The Moltbook story put me in a full panic. I scanned my app that night. <strong>10 issues flagged. All fixed the next morning.</strong> Now I scan every deploy."</div>
+        <div class="test-author">— Ava L. · Founder</div>
+        <div class="test-platform">Built with Bolt.new</div>
+      </div>
+      <div class="testimonial">
+        <div class="test-quote">"Finally a security tool that doesn't assume I have a DevOps team. <strong>Plain English fixes I can actually use.</strong>"</div>
+        <div class="test-author">— Priya S. · Non-technical founder</div>
+        <div class="test-platform">Built with v0 by Vercel</div>
+      </div>
+      <div class="testimonial">
+        <div class="test-quote">"The fact that <strong>my code never leaves my browser</strong> was the dealbreaker. I don't want another security company seeing my source."</div>
+        <div class="test-author">— James K. · Solo developer</div>
+        <div class="test-platform">Built with Windsurf</div>
+      </div>
+      <div class="testimonial">
+        <div class="test-quote">"Vibesecur caught the <strong>missing Supabase RLS</strong> on all 3 of my client apps. That's potentially thousands of users' data that stayed private."</div>
+        <div class="test-author">— Carlos M. · Vibe-coding agency</div>
+        <div class="test-platform">Lovable · Bolt · Cursor</div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stat-strip">
+      <div class="stat-box" style="--sc:rgba(0,245,168,.5)"><div class="stat-n" style="color:#00F5A8">311</div><div class="stat-l">waitlist signups pre-launch</div></div>
+      <div class="stat-box" style="--sc:rgba(255,59,48,.5)"><div class="stat-n" style="color:#FF3B30">63%</div><div class="stat-l">of scanned Lovable apps had a critical issue on first scan</div></div>
+      <div class="stat-box" style="--sc:rgba(0,200,255,.5)"><div class="stat-n" style="color:#00C8FF">$0</div><div class="stat-l">cost to find your first vulnerability</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE 8 — CONTACT
+══════════════════════════════════════════ -->
+<div class="page" id="page-contact">
+  <div class="container section">
+    <div class="eyebrow g">Contact & Waitlist</div>
+    <h1 class="page-title">Join the waitlist.<br><span class="gr">First 500 get Solo free.</span></h1>
+    <p class="lead">One email when we launch. No spam. Your code is never stored.</p>
+
+    <div class="card-grid-2" style="align-items:start">
+      <!-- Waitlist form -->
+      <div class="card" style="--ac:rgba(0,245,168,.4);background:rgba(0,245,168,.03);border-color:rgba(0,245,168,.18)">
+        <div class="eyebrow g" style="margin-bottom:20px">Join the Waitlist</div>
+        <div class="form-group"><label class="form-label">Your Email</label><input class="form-input" type="email" placeholder="your@email.com" id="waitlist-email"></div>
+        <div class="form-group"><label class="form-label">What are you building with?</label>
+          <select class="form-input" style="cursor:none">
+            <option value="">Select platform...</option>
+            <option>Lovable</option><option>Cursor</option><option>Bolt.new</option><option>v0 by Vercel</option><option>Replit</option><option>Windsurf</option><option>Google AI Studio</option><option>Other</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Anything specific you want us to scan for?</label><textarea class="form-textarea" placeholder="e.g. Supabase auth, Stripe webhooks, Python backend..." style="min-height:80px"></textarea></div>
+        <button class="form-submit" onclick="joinWaitlist()">Join Waitlist — Get 3 Months Free →</button>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--t4);text-align:center;margin-top:10px">No spam · One email at launch · Unsubscribe anytime</div>
+      </div>
+
+      <!-- Contact info + general -->
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="contact-method">
+          <div class="cm-icon">✉️</div>
+          <div><div class="cm-label">Email</div><div class="cm-value"><a href="mailto:hello@vibesecur.com">hello@vibesecur.com</a></div></div>
+        </div>
+        <div class="contact-method">
+          <div class="cm-icon">🌐</div>
+          <div><div class="cm-label">Website</div><div class="cm-value"><a href="https://vibesecur.com" target="_blank">www.vibesecur.com</a></div></div>
+        </div>
+        <div class="contact-method">
+          <div class="cm-icon">📍</div>
+          <div><div class="cm-label">Based in</div><div class="cm-value">India · Building globally</div></div>
+        </div>
+        <div class="contact-method">
+          <div class="cm-icon">🏆</div>
+          <div><div class="cm-label">Recognition</div><div class="cm-value">Vietnam TechFest 2025 Finalist</div></div>
+        </div>
+
+        <!-- General contact form -->
+        <div class="card" style="--ac:rgba(0,200,255,.4)">
+          <div class="eyebrow b" style="margin-bottom:14px">Send a Message</div>
+          <div class="form-group"><input class="form-input" type="text" placeholder="Your name"></div>
+          <div class="form-group"><input class="form-input" type="email" placeholder="your@email.com"></div>
+          <div class="form-group"><textarea class="form-textarea" placeholder="Partnership, press, investor inquiry..." style="min-height:90px"></textarea></div>
+          <button class="form-submit" style="background:var(--cyan);color:#000" onclick="showToast('Message sent! We\'ll reply within 24 hours.')">Send Message →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE 9 — PRIVACY POLICY
+══════════════════════════════════════════ -->
+<div class="page" id="page-privacy">
+  <div class="container section" style="max-width:720px">
+    <div class="eyebrow g">Legal</div>
+    <h1 class="page-title">Privacy <span class="gr">Policy</span></h1>
+    <p style="font-family:var(--mono);font-size:11px;color:var(--t4);margin-bottom:40px">Last updated: April 24, 2026</p>
+
+    <div class="legal-section">
+      <div class="legal-h">The short version</div>
+      <div class="legal-p">Your code never leaves your browser. We don't store it, log it, or transmit it. Ever. That's the entire privacy policy in one sentence.</div>
+    </div>
+    <div class="sep" style="margin:30px 0"></div>
+    <div class="legal-section">
+      <div class="legal-h">1. Information we collect</div>
+      <div class="legal-p">When you join the waitlist, we collect your email address and optionally the platform you use. We do not collect your code, your application name, your company, or any other identifying information unless you voluntarily provide it.</div>
+    </div>
+    <div class="legal-section">
+      <div class="legal-h">2. How your code is handled</div>
+      <div class="legal-p">The Vibesecur web scanner runs entirely in your browser. Your code is processed locally using WebAssembly. It is never sent to our servers. The MCP server runs on your local machine. Neither product uploads, stores, or logs your source code.</div>
+    </div>
+    <div class="legal-section">
+      <div class="legal-h">3. Cookies and analytics</div>
+      <div class="legal-p">We use minimal, privacy-respecting analytics (page views only, no fingerprinting). We do not use advertising cookies or third-party tracking pixels. You can opt out at any time via your browser settings.</div>
+    </div>
+    <div class="legal-section">
+      <div class="legal-h">4. Email communications</div>
+      <div class="legal-p">If you join our waitlist, we will send you one email when Vibesecur launches. We will not send you marketing emails without your explicit consent. You can unsubscribe at any time.</div>
+    </div>
+    <div class="legal-section">
+      <div class="legal-h">5. Data retention</div>
+      <div class="legal-p">Waitlist emails are stored until you unsubscribe or request deletion. We do not retain any scan data. You may request deletion of your email at any time by emailing hello@vibesecur.com.</div>
+    </div>
+    <div class="legal-section">
+      <div class="legal-h">6. Contact</div>
+      <div class="legal-p">Privacy questions: hello@vibesecur.com</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE 10 — TERMS
+══════════════════════════════════════════ -->
+<div class="page" id="page-terms">
+  <div class="container section" style="max-width:720px">
+    <div class="eyebrow g">Legal</div>
+    <h1 class="page-title">Terms &amp; <span class="gr">Conditions</span></h1>
+    <p style="font-family:var(--mono);font-size:11px;color:var(--t4);margin-bottom:40px">Last updated: April 24, 2026</p>
+
+    <div class="legal-section">
+      <div class="legal-h">1. Acceptance of Terms</div>
+      <div class="legal-p">By using Vibesecur, you agree to these terms. If you do not agree, please do not use the service.</div>
+    </div>
+    <div class="sep" style="margin:30px 0"></div>
+    <div class="legal-section">
+      <div class="legal-h">2. Use of Service</div>
+      <div class="legal-p">Vibesecur is a security analysis tool. You may use it to scan code you own or have explicit permission to analyze. You may not use Vibesecur to scan third-party code without authorization.</div>
+    </div>
+    <div class="legal-section">
+      <div class="legal-h">3. Accuracy of Results</div>
+      <div class="legal-p">Vibesecur's scan results are provided for informational purposes only. We make no warranty that scans are comprehensive or that a passing score guarantees security. Results should be reviewed by a qualified professional for critical applications.</div>
+    </div>
+    <div class="legal-section">
+      <div class="legal-h">4. Intellectual Property</div>
+      <div class="legal-p">The Vibesecur name, logo, web scanner, and associated software are owned by Vibesecur. The rule engine is open-source under the MIT license. You retain full ownership of all code you scan.</div>
+    </div>
+    <div class="legal-section">
+      <div class="legal-h">5. Limitation of Liability</div>
+      <div class="legal-p">Vibesecur is provided "as is." We are not liable for any security incidents, data breaches, or financial loss arising from use of, or reliance on, our scan results.</div>
+    </div>
+    <div class="legal-section">
+      <div class="legal-h">6. Changes to Terms</div>
+      <div class="legal-p">We may update these terms. Continued use of Vibesecur after changes constitutes acceptance. Material changes will be communicated via email.</div>
+    </div>
+    <div class="legal-section">
+      <div class="legal-h">7. Contact</div>
+      <div class="legal-p">Legal questions: hello@vibesecur.com</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE 11 — SITEMAP
+══════════════════════════════════════════ -->
+<div class="page" id="page-sitemap">
+  <div class="container section">
+    <div class="eyebrow g">Sitemap</div>
+    <h1 class="page-title">Every page on <span class="gr">Vibesecur.</span></h1>
+    <p class="lead">Full site structure for easy navigation and search engine indexing.</p>
+    <div class="sitemap-grid">
+      <div>
+        <div class="sm-section-title">Main Pages</div>
+        <a class="sm-link" onclick="show('home')">Home — Main entry point</a>
+        <a class="sm-link" onclick="show('about')">About Us — Story &amp; founder</a>
+        <a class="sm-link" onclick="show('services')">Services — How it works</a>
+        <a class="sm-link" onclick="show('pricing')">Pricing — Plans &amp; early access</a>
+        <a class="sm-link" onclick="show('contact')">Contact — Waitlist &amp; support</a>
+      </div>
+      <div>
+        <div class="sm-section-title">Resources</div>
+        <a class="sm-link" onclick="show('blog')">Blog — Security guides</a>
+        <a class="sm-link" onclick="show('faq')">FAQ — Common questions</a>
+        <a class="sm-link" onclick="show('testimonials')">Testimonials — Founder reviews</a>
+      </div>
+      <div>
+        <div class="sm-section-title">Legal</div>
+        <a class="sm-link" onclick="show('privacy')">Privacy Policy</a>
+        <a class="sm-link" onclick="show('terms')">Terms &amp; Conditions</a>
+        <a class="sm-link" onclick="show('sitemap')">Sitemap</a>
+        <div class="sm-section-title" style="margin-top:24px">External</div>
+        <a class="sm-link" href="https://vibesecur.com" target="_blank">vibesecur.com</a>
+        <a class="sm-link" href="mailto:hello@vibesecur.com">hello@vibesecur.com</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div style="position:relative;z-index:10;border-top:.5px solid var(--border);padding:32px 0;margin-top:40px">
+  <div class="container" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+    <div style="display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">
+      <div class="nav-logo-sq">🛡</div>Vibesecur
+    </div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap">
+      <button class="nav-link" onclick="show('privacy')" style="font-size:11px">Privacy</button>
+      <button class="nav-link" onclick="show('terms')" style="font-size:11px">Terms</button>
+      <button class="nav-link" onclick="show('sitemap')" style="font-size:11px">Sitemap</button>
+      <button class="nav-link" onclick="show('contact')" style="font-size:11px">Contact</button>
+    </div>
+    <div style="font-family:var(--mono);font-size:10px;color:var(--t4)">© 2026 Vibesecur · hello@vibesecur.com · vibesecur.com</div>
+  </div>
+</div>
+
+<script>
+// ── CURSOR ────────────────────────────────────
+const cur = document.getElementById('cur');
+const ring = document.getElementById('ring');
+document.addEventListener('mousemove', e => {
+  cur.style.left = e.clientX + 'px'; cur.style.top = e.clientY + 'px';
+  ring.style.left = e.clientX + 'px'; ring.style.top = e.clientY + 'px';
+});
+document.querySelectorAll('a,button,.blog-card,.price-card,.nav-link').forEach(el => {
+  el.addEventListener('mouseenter', () => { cur.style.transform='translate(-50%,-50%) scale(2.5)'; ring.style.transform='translate(-50%,-50%) scale(1.5)'; ring.style.borderColor='rgba(0,245,168,.7)'; });
+  el.addEventListener('mouseleave', () => { cur.style.transform='translate(-50%,-50%)'; ring.style.transform='translate(-50%,-50%)'; ring.style.borderColor='rgba(0,245,168,.35)'; });
+});
+
+// ── PAGE ROUTING ──────────────────────────────
+function show(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  const p = document.getElementById('page-' + id);
+  if (p) { p.classList.add('active'); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+  document.querySelectorAll('.nav-link').forEach(l => {
+    if (l.getAttribute('onclick')?.includes("'" + id + "'")) l.classList.add('active');
+  });
+}
+
+// ── FAQ ───────────────────────────────────────
+function toggleFaq(el) {
+  const item = el.closest('.faq-item');
+  const wasOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+  if (!wasOpen) item.classList.add('open');
+}
+
+// ── WAITLIST FORM ─────────────────────────────
+function joinWaitlist() {
+  const email = document.getElementById('waitlist-email').value.trim();
+  if (!email || !email.includes('@')) { showToast('⚠ Enter a valid email'); return; }
+  showToast('🛡 You\'re on the list! Check your inbox.');
+}
+
+// ── TOAST ─────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+</script>
+</body>
+</html>

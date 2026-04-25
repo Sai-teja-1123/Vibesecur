@@ -22,7 +22,7 @@ import {
   detectWorkspacePath,
   isHomePath,
 } from './repo-scan.mjs';
-import { postRemoteLocalScan } from './api-scan.mjs';
+import { postRemoteLocalScan, getMcpLockContext } from './api-scan.mjs';
 
 const require = createRequire(import.meta.url);
 const mcpPkg = require('../package.json');
@@ -33,6 +33,24 @@ const server = new McpServer({
 });
 
 const SEVERITY_ORDER = { critical: 0, high: 1, medium: 2, low: 3 };
+
+function isPathWithin(parentPath, childPath) {
+  const parent = path.resolve(parentPath).toLowerCase();
+  const child = path.resolve(childPath).toLowerCase();
+  const rel = path.relative(parent, child);
+  return rel === '' || (!rel.startsWith('..') && !path.isAbsolute(rel));
+}
+
+function enforceLockedRootOrThrow(targetPath) {
+  const lock = getMcpLockContext();
+  if (!lock.strict || !lock.lockedRoot) return;
+  if (!isPathWithin(lock.lockedRoot, targetPath)) {
+    throw new Error(
+      `This MCP install is locked to "${lock.lockedRoot}". ` +
+      `Requested path "${path.resolve(targetPath)}" is outside the allowed folder.`,
+    );
+  }
+}
 
 function buildScanMeta(resolvedRoot, includeGlobs, excludeGlobs, maxFiles, matchedLength, scannedLength) {
   return {
@@ -163,7 +181,7 @@ server.registerTool(
       includeGlobs: z.array(z.string()).default(DEFAULT_INCLUDE),
       excludeGlobs: z.array(z.string()).default(DEFAULT_EXCLUDE),
       maxFiles: z.number().int().min(1).max(5000).default(200),
-      topFindings: z.number().int().min(1).max(20).default(5),
+      topFindings: z.number().int().min(1).max(50).default(20),
     },
   },
   async ({
@@ -171,10 +189,11 @@ server.registerTool(
     includeGlobs = DEFAULT_INCLUDE,
     excludeGlobs = DEFAULT_EXCLUDE,
     maxFiles = 200,
-    topFindings = 5,
+    topFindings = 20,
   }) => {
     try {
       const resolvedRoot = normalizeRootPath(rootPath);
+      enforceLockedRootOrThrow(resolvedRoot);
       await ensureDirectory(resolvedRoot);
       const { matchedFiles, limitedFiles, fileResults, aggregate } = await gatherRepoScan(
         resolvedRoot,
@@ -232,7 +251,21 @@ server.registerTool(
     },
   },
   async ({ code, lang = 'auto', projectRoot = '.' }) => {
+    try {
+      enforceLockedRootOrThrow(projectRoot);
+    } catch (error) {
+      return {
+        content: [{ type: 'text', text: error.message }],
+        isError: true,
+      };
+    }
     const remote = await postRemoteLocalScan({ code, lang, projectRoot, platform: 'mcp' });
+    if (!remote.skipped && !remote.ok && remote.status !== 402) {
+      return {
+        content: [{ type: 'text', text: JSON.stringify(remote.json || { error: 'Remote scan failed' }, null, 2) }],
+        isError: true,
+      };
+    }
     if (!remote.skipped && remote.status === 402) {
       return {
         content: [{ type: 'text', text: JSON.stringify(remote.json, null, 2) }],
@@ -283,6 +316,7 @@ server.registerTool(
   async ({ filePath, lang = 'auto' }) => {
     try {
       const resolvedPath = path.resolve(filePath);
+      enforceLockedRootOrThrow(resolvedPath);
       const code = await fs.readFile(resolvedPath, 'utf8');
       const useLang = lang === 'auto' ? inferLang(resolvedPath) : lang;
       const projectRoot = path.dirname(resolvedPath);
@@ -298,6 +332,11 @@ server.registerTool(
       } else if (!remote.skipped && remote.status === 402) {
         return {
           content: [{ type: 'text', text: JSON.stringify(remote.json, null, 2) }],
+          isError: true,
+        };
+      } else if (!remote.skipped && !remote.ok) {
+        return {
+          content: [{ type: 'text', text: JSON.stringify(remote.json || { error: 'Remote scan failed' }, null, 2) }],
           isError: true,
         };
       } else {
@@ -372,6 +411,7 @@ server.registerTool(
   }) => {
     try {
       const resolvedRoot = normalizeRootPath(rootPath);
+      enforceLockedRootOrThrow(resolvedRoot);
       await ensureDirectory(resolvedRoot);
       const { matchedFiles, limitedFiles, fileResults, aggregate, topRiskFiles } =
         await gatherRepoScan(resolvedRoot, includeGlobs, excludeGlobs, maxFiles);
@@ -437,6 +477,7 @@ server.registerTool(
   }) => {
     try {
       const resolvedRoot = detectWorkspacePath();
+      enforceLockedRootOrThrow(resolvedRoot);
       if (isHomePath(resolvedRoot)) {
         return {
           content: [

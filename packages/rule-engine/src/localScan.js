@@ -15,6 +15,14 @@ export function localScan(code, lang = 'js') {
   for (const rule of rules) {
     const matches = [...code.matchAll(rule.re)];
     for (const match of matches) {
+      // A003 can over-match valid jwt.sign() calls. Skip when expiry is present.
+      if (rule.id === 'A003') {
+        const matchedCall = String(match[0] || '');
+        if (/expiresIn\s*:|exp\s*:/i.test(matchedCall)) {
+          continue;
+        }
+      }
+
       const lineNumber = code.substring(0, match.index).split('\n').length;
       const snippet = match[0].substring(0, 80) + (match[0].length > 80 ? '...' : '');
       findings.push({

@@ -23,7 +23,7 @@ const ensureBillingEnabled = (res) => {
 };
 
 const PLANS = {
-  free:  { name:'Free',  price:0,    scans:50,   features:['50 scans/month','Local engine','Basic checklist'] },
+  free:  { name:'Free',  price:0,    scans:10,   features:['10 scans/month','Local engine','Basic checklist'] },
   solo:  { name:'Solo',  price:900,  scans:-1,   features:['Unlimited scans','Claude AI','IP Passport 1/mo','All MCP tools'] },
   pro:   { name:'Pro',   price:2900, scans:-1,   features:['5 projects','Everything in Solo','Watermarking','Investor PDF report','Team access'] },
 };

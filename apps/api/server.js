@@ -19,6 +19,7 @@ import passportRoutes from './routes/passport.js';
 import billingRoutes from './routes/billing.js';
 import adminRoutes   from './routes/admin.js';
 import waitlistRoutes from './routes/waitlist.js';
+import mcpRoutes     from './routes/mcp.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 const requireEnv = (name, options = {}) => {
@@ -88,7 +89,7 @@ app.use(cors({
     return cb(new Error(`CORS origin not allowed: ${origin}`));
   },
   methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-session-id'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-session-id', 'x-vs-install-token'],
   credentials: true,
 }));
 
@@ -141,6 +142,7 @@ app.use('/api/v1/passport', passportRoutes);
 app.use('/api/v1/billing',  billingRoutes);
 app.use('/api/v1/admin',    adminRoutes);
 app.use('/api/v1/waitlist', waitlistRoutes);
+app.use('/api/v1/mcp',      mcpRoutes);
 
 // ── 404 handler ───────────────────────────────────────────
 app.use((req, res) => res.status(404).json({

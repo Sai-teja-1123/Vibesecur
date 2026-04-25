@@ -7,6 +7,7 @@ import { body, query as queryParam, validationResult } from 'express-validator';
 import { requireAuth, optionalAuth } from '../middleware/auth.js';
 import { requirePlan } from '../middleware/plans.js';
 import { checkProjectQuota, getProjectQuota, incrementProjectUsage } from '../middleware/projectQuota.js';
+import { verifyMcpInstallLock } from '../middleware/mcpInstallLock.js';
 import { query } from '../utils/db.js';
 import { localScan } from '../services/ScanService.js';
 import { createLogger } from '../utils/logger.js';
@@ -58,6 +59,9 @@ router.post('/local',
   body('lang').isIn(['js','ts','py','json','auto']).optional(),
   body('platform').isString().isLength({ max: 50 }).optional(),
   body('projectHash').isString().isLength({ min: 64, max: 64 }),
+  body('installToken').isString().isLength({ min: 64, max: 64 }).optional(),
+  body('lockedRootHash').isString().isLength({ min: 64, max: 64 }).optional(),
+  verifyMcpInstallLock,
   checkProjectQuota,
   async (req, res, next) => {
     try {
@@ -132,6 +136,9 @@ router.post('/log',
   body('scanReceipt').isString().isLength({ min: 64, max: 64 }).optional(),
   body('projectHash').isString().isLength({ min: 64, max: 64 }),
   body('source').isIn(['web', 'mcp', 'extension', 'api']).optional(),
+  body('installToken').isString().isLength({ min: 64, max: 64 }).optional(),
+  body('lockedRootHash').isString().isLength({ min: 64, max: 64 }).optional(),
+  verifyMcpInstallLock,
   async (req, res, next) => {
     try {
       // POLICY: reject any request that includes a 'code' field
